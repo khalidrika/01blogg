@@ -7,10 +7,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 
 import lombok.Data;
 
-@RestController("/api/register") 
+@RestController
+@RequestMapping("/api/register")
 @Data 
 public class RegisterController {
     private final RegistrationService registrationService;
