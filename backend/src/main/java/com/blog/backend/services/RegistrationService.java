@@ -3,7 +3,6 @@ import org.springframework.http.ResponseEntity;
 import com.blog.backend.entity.User;
 import com.blog.backend.repository.UserRepository;
 import com.blog.backend.dto.RegistrationReq;
-
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.stereotype.Service;
@@ -14,6 +13,10 @@ public class RegistrationService {
     private final UserRepository userRepository;
 
     public ResponseEntity<User> register(RegistrationReq request) {
+        User user = new User();
+        user.setUsername(request.username());
+        user.setEmail(request.email());
+        user.setPassword(passwordEncoder.encode(request.password()));
         return ResponseEntity.ok(user);
     }
 
