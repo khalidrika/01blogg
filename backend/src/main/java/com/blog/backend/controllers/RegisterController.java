@@ -22,8 +22,8 @@ public class RegisterController {
    public String register() {
         return "Register endpoint is working!";
      }
-
-    @PostMapping
+     
+     @PostMapping
    public ResponseEntity<User> register(@RequestBody User user) {
         return registrationService.register(user);
      }

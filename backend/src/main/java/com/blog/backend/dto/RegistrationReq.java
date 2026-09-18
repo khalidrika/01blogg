@@ -2,7 +2,7 @@ package com.blog.backend.dto;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.*;
+import jakarta.validation.constraints.Size;
 
 public record RegistrationReq(
     @NotBlank(message = "Username is required")
@@ -14,9 +14,6 @@ public record RegistrationReq(
 
     @Size(min = 6, message = "Password must be at least 6 characters long")
     @NotBlank(message = "Password is required")
-    String password,
-
-    @NotBlank(message = "Role is required")
-    String role
+    String password
 ) {
 }
