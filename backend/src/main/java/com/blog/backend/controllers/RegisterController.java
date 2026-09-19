@@ -9,8 +9,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import com.blog.backend.dto.RegistrationReq;
+import lombok.RequiredArgsConstructor;
 
-@lombok.RequiredArgsConstructor
+@RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/register")
 
@@ -24,6 +25,6 @@ public class RegisterController {
      
      @PostMapping
    public ResponseEntity<User> register(@RequestBody RegistrationReq request) {
-        return registrationService.register(user);
+        return registrationService.register(request);
      }
 }
