@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import com.blog.backend.dto.RegistrationReq;
 import lombok.RequiredArgsConstructor;
 
+
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/register")
