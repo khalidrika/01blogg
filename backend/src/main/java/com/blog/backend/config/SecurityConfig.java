@@ -6,9 +6,16 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import com.blog.backend.services.JwtService;
+
+import lombok.RequiredArgsConstructor;
+
+@RequiredArgsConstructor
 @Configuration
 public class SecurityConfig {
+    private final JwtService jwtService;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -20,11 +27,12 @@ public class SecurityConfig {
 
         http.csrf(csrf -> csrf.disable()).authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/register/**", "/api/login/**").permitAll()
-                .anyRequest().permitAll())
+                .anyRequest().authenticated())
 
                 .formLogin(form -> form.disable())
 
-                .httpBasic(basic -> basic.disable());
+                .httpBasic(basic -> basic.disable())
+                .addFilterBefore(new JwtAuthenticationFilter(jwtService), UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 }
