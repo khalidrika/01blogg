@@ -55,9 +55,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                email,
-                null,
-                Collections.emptyList());
+                email, // principal
+                null, //credentials
+                Collections.emptyList()); //authorities
 
         System.out.println(
                 "6666666666666666 - AUTHENTICATED = " + authentication.isAuthenticated());//////////////////////
@@ -67,12 +67,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         context.setAuthentication(authentication);
 
         SecurityContextHolder.setContext(context);
-        context.setAuthentication(authentication);
         
         System.out.println(
                 "7777777777777 - CONTEXT AUTH = "
                         + SecurityContextHolder.getContext().getAuthentication());////////////////
-        SecurityContextHolder.setContext(context);
         filterChain.doFilter(request, response);
     }
 }
