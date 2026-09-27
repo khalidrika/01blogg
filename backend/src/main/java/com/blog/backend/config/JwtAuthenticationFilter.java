@@ -26,6 +26,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             HttpServletResponse response,
             FilterChain filterChain) throws ServletException, IOException {
 
+        System.out.println("URI0000000000 = " + request.getRequestURI());
+
         System.out.println("11111111111111 - FILTER CALLED");//////////////////////
 
         String authHeader = request.getHeader("Authorization");
@@ -56,8 +58,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
                 email, // principal
-                null, //credentials
-                Collections.emptyList()); //authorities
+                null, // credentials
+                Collections.emptyList()); // authorities
 
         System.out.println(
                 "6666666666666666 - AUTHENTICATED = " + authentication.isAuthenticated());//////////////////////
@@ -67,7 +69,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         context.setAuthentication(authentication);
 
         SecurityContextHolder.setContext(context);
-        
+
         System.out.println(
                 "7777777777777 - CONTEXT AUTH = "
                         + SecurityContextHolder.getContext().getAuthentication());////////////////

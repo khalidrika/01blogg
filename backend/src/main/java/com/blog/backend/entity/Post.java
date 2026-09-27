@@ -3,6 +3,7 @@ package com.blog.backend.entity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "posts")
@@ -15,9 +16,12 @@ public class Post {
     private Long id;
 
     private String title;
+
     private String content;
 
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User author;
+
+    private LocalDateTime createdAt;
 }
