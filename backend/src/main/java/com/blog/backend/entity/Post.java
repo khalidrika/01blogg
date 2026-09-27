@@ -16,4 +16,8 @@ public class Post {
 
     private String title;
     private String content;
+
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User author;
 }
