@@ -1,15 +1,16 @@
 package com.blog.backend.entity;
 
+import java.time.LocalDateTime;
+
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
-import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "posts")
+@Table(name = "comments")
 @Getter
 @Setter
-public class Post {
+public class Comment {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -17,12 +18,13 @@ public class Post {
 
     private String content;
 
-    private String title;
-
     private LocalDateTime createdAt;
 
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User author;
+
+    @ManyToOne
+    @JoinColumn(name = "post_id")
+    private Post post;
 }
-    

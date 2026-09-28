@@ -4,6 +4,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+import com.blog.backend.dto.ErrorResponse;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -18,5 +21,23 @@ public class GlobalExceptionHandler {
         }
 
         return ResponseEntity.badRequest().body(errors);
+    }
+
+    @ExceptionHandler(PostNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handlePostNotFound(
+            PostNotFoundException ex) {
+
+        return ResponseEntity
+                .status(404)
+                .body(new ErrorResponse(ex.getMessage()));
+    }
+
+    @ExceptionHandler(PostForbiddenException.class)
+    public ResponseEntity<ErrorResponse> handlePostForbidden(
+            PostForbiddenException ex) {
+
+        return ResponseEntity
+                .status(403)
+                .body(new ErrorResponse(ex.getMessage()));
     }
 }
