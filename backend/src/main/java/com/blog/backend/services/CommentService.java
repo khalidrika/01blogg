@@ -11,6 +11,7 @@ import com.blog.backend.dto.CommentResponse;
 import com.blog.backend.entity.Comment;
 import com.blog.backend.entity.Post;
 import com.blog.backend.entity.User;
+import com.blog.backend.exception.CommentNotFoundException;
 import com.blog.backend.exception.PostForbiddenException;
 import com.blog.backend.exception.PostNotFoundException;
 import com.blog.backend.repository.CommentRepository;
@@ -77,7 +78,7 @@ public class CommentService {
         public void deleteComment(Long id) {
 
                 Comment comment = commentRepository.findById(id)
-                                .orElseThrow(() -> new RuntimeException("Comment not found"));
+                                .orElseThrow(() -> new CommentNotFoundException("Comment not found"));
 
                 String email = SecurityContextHolder
                                 .getContext()

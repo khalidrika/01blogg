@@ -40,4 +40,13 @@ public class GlobalExceptionHandler {
                 .status(403)
                 .body(new ErrorResponse(ex.getMessage()));
     }
+
+    @ExceptionHandler(CommentNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleCommentNotFound(
+            CommentNotFoundException ex) {
+
+        return ResponseEntity
+                .status(404)
+                .body(new ErrorResponse(ex.getMessage()));
+    }
 }
