@@ -19,8 +19,13 @@ public class RegistrationService {
 
     public ResponseEntity<?> register(RegistrationReq request) {
         User existingUser = userRepository.findByEmail(request.email());
+        User existingUserByusername =  userRepository.findByUsername(request.username());
         if (existingUser != null) {
             return ResponseEntity.badRequest().body(new ErrorResponse("Email is already in use"));
+        }else if (existingUserByusername != null){
+            return ResponseEntity.badRequest().body(new ErrorResponse("Username is already in use"));
+
+
         }
 
         User user = new User();

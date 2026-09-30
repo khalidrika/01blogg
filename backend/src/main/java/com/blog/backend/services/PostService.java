@@ -53,7 +53,9 @@ public class PostService {
                 post.setCreatedAt(LocalDateTime.now());
 
                 Post savedPost = postRepository.save(post);
-                
+
+                notificationService.notifyFollowersAboutNewPost(user); // notification
+
                 return new PostResponse(
                                 savedPost.getId(),
                                 savedPost.getTitle(),
