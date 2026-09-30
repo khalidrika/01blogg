@@ -22,6 +22,7 @@ public class PostService {
 
         private final PostRepository postRepository;
         private final UserRepository userRepository;
+        private final NotificationService notificationService;// notification
 
         public List<PostResponse> getAllPosts() {
                 return postRepository.findAll()
@@ -52,6 +53,7 @@ public class PostService {
                 post.setCreatedAt(LocalDateTime.now());
 
                 Post savedPost = postRepository.save(post);
+                
                 return new PostResponse(
                                 savedPost.getId(),
                                 savedPost.getTitle(),
