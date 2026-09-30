@@ -1,9 +1,12 @@
 package com.blog.backend.services;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+
+import com.blog.backend.dto.UserResponse;
 import com.blog.backend.entity.Follow;
 import com.blog.backend.entity.User;
 import com.blog.backend.repository.FollowRepository;
@@ -56,4 +59,28 @@ public class FollowService {
     public long getFollowingCount(Long userId) {
         return followRepository.countByFollowerId(userId);
     }
-}   
+
+    public List<UserResponse> getFollowers(Long userId) {
+
+        return followRepository.findByFollowingId(userId)
+                .stream()
+                .map(follow -> new UserResponse(
+                        follow.getFollower().getId(),
+                        follow.getFollower().getUsername(),
+                        follow.getFollower().getEmail(),
+                        follow.getFollower().getRole().name()))
+                .toList();
+    }
+
+    public List<UserResponse> getFollowing(Long userId) {
+
+        return followRepository.findByFollowerId(userId)
+                .stream()
+                .map(follow -> new UserResponse(
+                        follow.getFollowing().getId(),
+                        follow.getFollowing().getUsername(),
+                        follow.getFollowing().getEmail(),
+                        follow.getFollowing().getRole().name()))
+                .toList();
+    }
+}
