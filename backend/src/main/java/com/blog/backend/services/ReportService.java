@@ -10,6 +10,7 @@ import com.blog.backend.entity.Report;
 import com.blog.backend.entity.User;
 import com.blog.backend.repository.ReportRepository;
 import com.blog.backend.repository.UserRepository;
+import java.util.List;
 
 import lombok.RequiredArgsConstructor;
 
@@ -40,5 +41,9 @@ public class ReportService {
         report.setCreatedAt(LocalDateTime.now());
 
         reportRepository.save(report);
+    }
+
+    public List<Report> getAllReports() {
+        return reportRepository.findAll();
     }
 }
