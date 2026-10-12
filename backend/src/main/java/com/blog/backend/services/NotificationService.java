@@ -12,8 +12,9 @@ import com.blog.backend.entity.User;
 import com.blog.backend.repository.FollowRepository;
 import com.blog.backend.repository.NotificationRepository;
 import com.blog.backend.repository.UserRepository;
-
+import com.blog.backend.dto.NotificationResponse;
 import lombok.RequiredArgsConstructor;
+import com.blog.backend.exception.NotificationForbiddenException;
 
 @Service
 @RequiredArgsConstructor
@@ -44,7 +45,7 @@ public class NotificationService {
         }
     }
 
-    public List<Notification> getMyNotifications() {
+    public List<NotificationResponse> getMyNotifications() {
 
         String email = SecurityContextHolder
                 .getContext()
@@ -54,6 +55,35 @@ public class NotificationService {
         User user = userRepository.findByEmail(email);
 
         return notificationRepository
-                .findByUserIdOrderByCreatedAtDesc(user.getId());
+                .findByUserIdOrderByCreatedAtDesc(user.getId())
+                .stream()
+                .map(notification -> new NotificationResponse(
+                        notification.getId(),
+                        notification.getMessage(),
+                        notification.isRead(),
+                        notification.getCreatedAt()))
+                .toList();
+    }
+
+    public void markAsRead(Long notificationId) {
+
+        String email = SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getName();
+
+        User currentUser = userRepository.findByEmail(email);
+
+        Notification notification = notificationRepository
+                .findById(notificationId)
+                .orElseThrow(() -> new RuntimeException("Notification not found"));
+
+        if (!notification.getUser().getId().equals(currentUser.getId())) {
+            throw new NotificationForbiddenException("You cannot modify this notification");
+        }
+
+        notification.setRead(true);
+
+        notificationRepository.save(notification);
     }
 }

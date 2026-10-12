@@ -49,4 +49,13 @@ public class GlobalExceptionHandler {
                 .status(404)
                 .body(new ErrorResponse(ex.getMessage()));
     }
+
+    @ExceptionHandler(NotificationForbiddenException.class)
+    public ResponseEntity<ErrorResponse> handleNotificationForbidden(
+            NotificationForbiddenException ex) {
+
+        return ResponseEntity
+                .status(403)
+                .body(new ErrorResponse(ex.getMessage()));
+    }
 }
