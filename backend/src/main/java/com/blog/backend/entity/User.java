@@ -1,6 +1,5 @@
 package com.blog.backend.entity;
 
-
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Entity;
@@ -21,4 +20,5 @@ public class User {
     private String email;
     private String password;
     private Role role;
+    private boolean banned = false;
 }

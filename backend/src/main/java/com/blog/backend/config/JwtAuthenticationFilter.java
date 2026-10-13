@@ -47,6 +47,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         try {
             email = jwtService.extractEmail(token);
             user = userRepository.findByEmail(email);
+            if (user.isBanned()) {
+                response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                return;
+            }
         } catch (Exception e) {
             filterChain.doFilter(request, response);
             return;

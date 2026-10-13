@@ -132,12 +132,20 @@ public class PostService {
                 return postRepository.findByAuthorId(userId)
                                 .stream()
                                 .map(post -> new PostResponse(
-                                        post.getId(),
-                                        post.getTitle(),
-                                        post.getContent(),
-                                        post.getAuthor().getId(),
-                                        post.getAuthor().getUsername(),
-                                        post.getCreatedAt()))
+                                                post.getId(),
+                                                post.getTitle(),
+                                                post.getContent(),
+                                                post.getAuthor().getId(),
+                                                post.getAuthor().getUsername(),
+                                                post.getCreatedAt()))
                                 .toList();
+        }
+
+        public void adminDeletePost(Long postId) {
+
+                Post post = postRepository.findById(postId)
+                                .orElseThrow(() -> new PostNotFoundException("Post not found"));
+
+                postRepository.delete(post);
         }
 }
