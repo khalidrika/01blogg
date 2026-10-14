@@ -14,6 +14,7 @@ import com.blog.backend.dto.PostResponse;
 import com.blog.backend.dto.UserResponse;
 import com.blog.backend.entity.Report;
 import com.blog.backend.repository.UserRepository;
+import com.blog.backend.services.AdminService;
 import com.blog.backend.services.PostService;
 import com.blog.backend.services.ReportService;
 import com.blog.backend.entity.User;
@@ -28,6 +29,7 @@ public class AdminController {
     private final ReportService reportService;
     private final UserRepository userRepository;
     private final PostService postService;
+    private final AdminService adminService;
 
     @GetMapping("/reports")
     public List<Report> getAllReports() {
@@ -75,10 +77,7 @@ public class AdminController {
     @DeleteMapping("/users/{userId}")
     public ResponseEntity<Void> deleteUser(@PathVariable Long userId) {
 
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-
-        userRepository.delete(user);
+        adminService.deleteUser(userId);
 
         return ResponseEntity.noContent().build();
     }

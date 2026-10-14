@@ -6,4 +6,8 @@ import java.util.List;
 
 public interface PostRepository extends JpaRepository<Post, Long> {
     List<Post> findByAuthorId(Long userId);
+
+    void deleteByAuthorId(Long userId);
+
+    List<Post> findByAuthorIdInOrderByCreatedAtDesc(List<Long> authorIds);
 }

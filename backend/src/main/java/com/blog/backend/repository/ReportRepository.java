@@ -5,4 +5,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import com.blog.backend.entity.Report;
 
 public interface ReportRepository extends JpaRepository<Report, Long> {
+
+    void deleteByReporterId(Long userId);
+
+    void deleteByReportedUserId(Long userId);
 }

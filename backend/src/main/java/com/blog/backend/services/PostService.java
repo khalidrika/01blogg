@@ -5,6 +5,8 @@ import java.util.List;
 
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+
+import com.blog.backend.repository.FollowRepository;
 import com.blog.backend.repository.PostRepository;
 import com.blog.backend.repository.UserRepository;
 import com.blog.backend.dto.PostRequest;
@@ -23,6 +25,7 @@ public class PostService {
         private final PostRepository postRepository;
         private final UserRepository userRepository;
         private final NotificationService notificationService;// notification
+        private final FollowRepository followRepository;
 
         public List<PostResponse> getAllPosts() {
                 return postRepository.findAll()
@@ -132,12 +135,12 @@ public class PostService {
                 return postRepository.findByAuthorId(userId)
                                 .stream()
                                 .map(post -> new PostResponse(
-                                                post.getId(),
-                                                post.getTitle(),
-                                                post.getContent(),
-                                                post.getAuthor().getId(),
-                                                post.getAuthor().getUsername(),
-                                                post.getCreatedAt()))
+                                        post.getId(),
+                                        post.getTitle(),
+                                        post.getContent(),
+                                        post.getAuthor().getId(),
+                                        post.getAuthor().getUsername(),
+                                        post.getCreatedAt()))
                                 .toList();
         }
 
@@ -147,5 +150,33 @@ public class PostService {
                                 .orElseThrow(() -> new PostNotFoundException("Post not found"));
 
                 postRepository.delete(post);
+        }
+
+        public List<PostResponse> getFeed() {
+
+                String email = SecurityContextHolder
+                                .getContext()
+                                .getAuthentication()
+                                .getName();
+
+                User user = userRepository.findByEmail(email);
+
+                List<Long> followingIds = followRepository
+                                .findByFollowerId(user.getId())
+                                .stream()
+                                .map(follow -> follow.getFollowing().getId())
+                                .toList();
+
+                return postRepository
+                                .findByAuthorIdInOrderByCreatedAtDesc(followingIds)
+                                .stream()
+                                .map(post -> new PostResponse(
+                                        post.getId(),
+                                        post.getTitle(),
+                                        post.getContent(),
+                                        post.getAuthor().getId(),
+                                        post.getAuthor().getUsername(),
+                                        post.getCreatedAt()))
+                                .toList();
         }
 }
