@@ -24,5 +24,7 @@ public class Post {
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User author;
+
+    private String mediaUrl;
+    private String mediaType;
 }
-    
