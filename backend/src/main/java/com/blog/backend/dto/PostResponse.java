@@ -8,5 +8,7 @@ public record PostResponse(
         String content,
         Long authorid,
         String authorusername,
-        LocalDateTime createdAt) {
-}
+        String mediaUrl,
+        String mediaType,
+        LocalDateTime createdAt
+) {}

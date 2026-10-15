@@ -12,7 +12,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.blog.backend.dto.PostRequest;
 import com.blog.backend.dto.PostResponse;
 import com.blog.backend.entity.Post;
 import com.blog.backend.entity.User;
@@ -24,271 +23,299 @@ import com.blog.backend.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
 
-
 @Service
 @RequiredArgsConstructor
 public class PostService {
 
-    private final PostRepository postRepository;
-    private final UserRepository userRepository;
-    private final NotificationService notificationService;
-    private final FollowRepository followRepository;
+        private final PostRepository postRepository;
+        private final UserRepository userRepository;
+        private final NotificationService notificationService;
+        private final FollowRepository followRepository;
 
-    public List<PostResponse> getAllPosts() {
+        public List<PostResponse> getAllPosts() {
 
-        return postRepository.findAll()
-                .stream()
-                .map(post -> new PostResponse(
-                        post.getId(),
-                        post.getTitle(),
-                        post.getContent(),
-                        post.getAuthor().getId(),
-                        post.getAuthor().getUsername(),
-                        post.getCreatedAt()
-                ))
-                .toList();
-    }
-
-
-
-    public PostResponse createPost(
-            String title,
-            String content,
-            MultipartFile media) {
-
-        String email = SecurityContextHolder
-                .getContext()
-                .getAuthentication()
-                .getName();
-
-        User user = userRepository.findByEmail(email);
-
-        Post post = new Post();
-
-        post.setTitle(title);
-        post.setContent(content);
-        post.setAuthor(user);
-        post.setCreatedAt(LocalDateTime.now());
-
-        if (media != null && !media.isEmpty()) {
-
-            String contentType = media.getContentType();
-
-            if (contentType != null && contentType.startsWith("image/")) {
-
-                post.setMediaType("image");
-
-            } else if (contentType != null && contentType.startsWith("video/")) {
-
-                post.setMediaType("video");
-
-            } else {
-
-                throw new RuntimeException(
-                        "Only images and videos are allowed"
-                );
-            }
-
-            try {
-
-                Path uploadDirectory = Paths.get("uploads");
-
-                Files.createDirectories(uploadDirectory);
-
-                String fileName =
-                        UUID.randomUUID()
-                                + "_"
-                                + media.getOriginalFilename();
-
-                Path filePath =
-                        uploadDirectory.resolve(fileName);
-
-                media.transferTo(filePath);
-
-                post.setMediaUrl(
-                        "/uploads/" + fileName
-                );
-
-            } catch (IOException e) {
-
-                throw new RuntimeException(
-                        "Could not save media file"
-                );
-            }
+                return postRepository.findAll()
+                                .stream()
+                                .map(post -> new PostResponse(
+                                                post.getId(),
+                                                post.getTitle(),
+                                                post.getContent(),
+                                                post.getAuthor().getId(),
+                                                post.getAuthor().getUsername(),
+                                                post.getMediaUrl(),
+                                                post.getMediaType(),
+                                                post.getCreatedAt()))
+                                .toList();
         }
 
-        Post savedPost =
-                postRepository.save(post);
+        public PostResponse createPost(
+                        String title,
+                        String content,
+                        MultipartFile media) {
 
-        notificationService
-                .notifyFollowersAboutNewPost(user);
+                if (title == null || title.isBlank()) {
+                        throw new RuntimeException("Title is required");
+                }
 
-        return new PostResponse(
-                savedPost.getId(),
-                savedPost.getTitle(),
-                savedPost.getContent(),
-                savedPost.getAuthor().getId(),
-                savedPost.getAuthor().getUsername(),
-                savedPost.getCreatedAt()
-        );
-    }
+                if (content == null || content.isBlank()) {
+                        throw new RuntimeException("Content is required");
+                }
 
+                String email = SecurityContextHolder
+                                .getContext()
+                                .getAuthentication()
+                                .getName();
 
+                User user = userRepository.findByEmail(email);
 
-    public PostResponse getPostById(Long id) {
+                Post post = new Post();
 
-        Post post = postRepository.findById(id)
-                .orElseThrow(
-                        () -> new PostNotFoundException(
-                                "Post not found"
-                        )
-                );
+                post.setTitle(title);
+                post.setContent(content);
+                post.setAuthor(user);
+                post.setCreatedAt(LocalDateTime.now());
 
-        return new PostResponse(
-                post.getId(),
-                post.getTitle(),
-                post.getContent(),
-                post.getAuthor().getId(),
-                post.getAuthor().getUsername(),
-                post.getCreatedAt()
-        );
-    }
+                if (media != null && !media.isEmpty()) {
 
-    public PostResponse updatePost(
-            Long id,
-            PostRequest request) {
+                        String contentType = media.getContentType();
 
-        Post post = postRepository.findById(id)
-                .orElseThrow(
-                        () -> new PostNotFoundException(
-                                "Post not found"
-                        )
-                );
+                        if (contentType != null && contentType.startsWith("image/")) {
 
-        String email = SecurityContextHolder
-                .getContext()
-                .getAuthentication()
-                .getName();
+                                post.setMediaType("image");
 
-        if (!post.getAuthor()
-                .getEmail()
-                .equals(email)) {
+                        } else if (contentType != null && contentType.startsWith("video/")) {
 
-            throw new PostForbiddenException(
-                    "You cannot update this post"
-            );
+                                post.setMediaType("video");
+
+                        } else {
+
+                                throw new RuntimeException(
+                                                "Only images and videos are allowed");
+                        }
+
+                        try {
+
+                                Path uploadDirectory = Paths.get("uploads");
+
+                                Files.createDirectories(uploadDirectory);
+
+                                String fileName = UUID.randomUUID()
+                                                + "_"
+                                                + media.getOriginalFilename();
+
+                                Path filePath = uploadDirectory.resolve(fileName);
+
+                                media.transferTo(filePath);
+
+                                post.setMediaUrl(
+                                                "/uploads/" + fileName);
+
+                        } catch (IOException e) {
+
+                                throw new RuntimeException(
+                                                "Could not save media file");
+                        }
+                }
+
+                Post savedPost = postRepository.save(post);
+
+                notificationService
+                                .notifyFollowersAboutNewPost(user);
+
+                return new PostResponse(
+                                savedPost.getId(),
+                                savedPost.getTitle(),
+                                savedPost.getContent(),
+                                savedPost.getAuthor().getId(),
+                                savedPost.getAuthor().getUsername(),
+                                post.getMediaUrl(),
+                                post.getMediaType(),
+                                savedPost.getCreatedAt());
         }
 
-        post.setTitle(request.title());
-        post.setContent(request.content());
+        public PostResponse getPostById(Long id) {
 
-        Post savedPost =
-                postRepository.save(post);
+                Post post = postRepository.findById(id)
+                                .orElseThrow(
+                                                () -> new PostNotFoundException(
+                                                                "Post not found"));
 
-        return new PostResponse(
-                savedPost.getId(),
-                savedPost.getTitle(),
-                savedPost.getContent(),
-                savedPost.getAuthor().getId(),
-                savedPost.getAuthor().getUsername(),
-                savedPost.getCreatedAt()
-        );
-    }
-
-
-
-
-    public void deletePost(Long id) {
-
-        Post post = postRepository.findById(id)
-                .orElseThrow(
-                        () -> new PostNotFoundException(
-                                "Post not found"
-                        )
-                );
-
-        String email = SecurityContextHolder
-                .getContext()
-                .getAuthentication()
-                .getName();
-
-        if (!post.getAuthor()
-                .getEmail()
-                .equals(email)) {
-
-            throw new PostForbiddenException(
-                    "You cannot delete this post"
-            );
+                return new PostResponse(
+                                post.getId(),
+                                post.getTitle(),
+                                post.getContent(),
+                                post.getAuthor().getId(),
+                                post.getAuthor().getUsername(),
+                                post.getMediaUrl(),
+                                post.getMediaType(),
+                                post.getCreatedAt());
         }
 
-        postRepository.delete(post);
-    }
+        public PostResponse updatePost(
+                        Long id,
+                        String title,
+                        String content,
+                        MultipartFile media) {
 
+                Post post = postRepository.findById(id)
+                                .orElseThrow(() -> new PostNotFoundException("Post not found"));
 
+                String email = SecurityContextHolder
+                                .getContext()
+                                .getAuthentication()
+                                .getName();
 
-    public List<PostResponse> getPostsByUserId(
-            Long userId) {
+                if (!post.getAuthor().getEmail().equals(email)) {
+                        throw new PostForbiddenException("You cannot update this post");
+                }
 
-        return postRepository
-                .findByAuthorId(userId)
-                .stream()
-                .map(post -> new PostResponse(
-                        post.getId(),
-                        post.getTitle(),
-                        post.getContent(),
-                        post.getAuthor().getId(),
-                        post.getAuthor().getUsername(),
-                        post.getCreatedAt()
-                ))
-                .toList();
-    }
+                if (title == null || title.isBlank()) {
+                        throw new RuntimeException("Title is required");
+                }
 
+                if (content == null || content.isBlank()) {
+                        throw new RuntimeException("Content is required");
+                }
 
-    
-    public void adminDeletePost(Long postId) {
+                post.setTitle(title);
+                post.setContent(content);
 
-        Post post = postRepository.findById(postId)
-                .orElseThrow(
-                        () -> new PostNotFoundException(
-                                "Post not found"
-                        )
-                );
+                if (media != null && !media.isEmpty()) {
 
-        postRepository.delete(post);
-    }
+                        String contentType = media.getContentType();
 
-    public List<PostResponse> getFeed() {
+                        if (contentType != null && contentType.startsWith("image/")) {
+                                post.setMediaType("image");
 
-        String email = SecurityContextHolder
-                .getContext()
-                .getAuthentication()
-                .getName();
+                        } else if (contentType != null && contentType.startsWith("video/")) {
+                                post.setMediaType("video");
 
-        User user =
-                userRepository.findByEmail(email);
+                        } else {
+                                throw new RuntimeException("Only images and videos are allowed");
+                        }
 
-        List<Long> followingIds =
-                followRepository
-                        .findByFollowerId(user.getId())
-                        .stream()
-                        .map(follow ->
-                                follow.getFollowing().getId()
-                        )
-                        .toList();
+                        try {
+                                Path uploadDirectory = Paths.get("uploads");
 
-        return postRepository
-                .findByAuthorIdInOrderByCreatedAtDesc(
-                        followingIds
-                )
-                .stream()
-                .map(post -> new PostResponse(
-                        post.getId(),
-                        post.getTitle(),
-                        post.getContent(),
-                        post.getAuthor().getId(),
-                        post.getAuthor().getUsername(),
-                        post.getCreatedAt()
-                ))
-                .toList();
-    }
+                                Files.createDirectories(uploadDirectory);
+
+                                String fileName = UUID.randomUUID() + "_" + media.getOriginalFilename();
+
+                                Path filePath = uploadDirectory.resolve(fileName);
+
+                                media.transferTo(filePath);
+
+                                if (post.getMediaUrl() != null) {
+
+                                        Path oldFile = Paths.get(
+                                                        post.getMediaUrl().replaceFirst("^/uploads/", "uploads/"));
+
+                                        try {
+                                                Files.deleteIfExists(oldFile);
+                                        } catch (IOException e) {
+                                                throw new RuntimeException("Could not delete old media file");
+                                        }
+                                }
+
+                                post.setMediaUrl("/uploads/" + fileName);
+
+                        } catch (IOException e) {
+                                throw new RuntimeException("Could not save media file");
+                        }
+                }
+
+                Post savedPost = postRepository.save(post);
+
+                return new PostResponse(
+                                savedPost.getId(),
+                                savedPost.getTitle(),
+                                savedPost.getContent(),
+                                savedPost.getAuthor().getId(),
+                                savedPost.getAuthor().getUsername(),
+                                savedPost.getMediaUrl(),
+                                savedPost.getMediaType(),
+                                savedPost.getCreatedAt());
+        }
+
+        public void deletePost(Long id) {
+
+                Post post = postRepository.findById(id)
+                                .orElseThrow(
+                                                () -> new PostNotFoundException(
+                                                                "Post not found"));
+
+                String email = SecurityContextHolder
+                                .getContext()
+                                .getAuthentication()
+                                .getName();
+
+                if (!post.getAuthor()
+                                .getEmail()
+                                .equals(email)) {
+
+                        throw new PostForbiddenException(
+                                        "You cannot delete this post");
+                }
+
+                postRepository.delete(post);
+        }
+
+        public List<PostResponse> getPostsByUserId(
+                        Long userId) {
+
+                return postRepository
+                                .findByAuthorId(userId)
+                                .stream()
+                                .map(post -> new PostResponse(
+                                                post.getId(),
+                                                post.getTitle(),
+                                                post.getContent(),
+                                                post.getAuthor().getId(),
+                                                post.getAuthor().getUsername(),
+                                                post.getMediaUrl(),
+                                                post.getMediaType(),
+                                                post.getCreatedAt()))
+                                .toList();
+        }
+
+        public void adminDeletePost(Long postId) {
+
+                Post post = postRepository.findById(postId)
+                                .orElseThrow(
+                                                () -> new PostNotFoundException(
+                                                                "Post not found"));
+
+                postRepository.delete(post);
+        }
+
+        public List<PostResponse> getFeed() {
+
+                String email = SecurityContextHolder
+                                .getContext()
+                                .getAuthentication()
+                                .getName();
+
+                User user = userRepository.findByEmail(email);
+
+                List<Long> followingIds = followRepository
+                                .findByFollowerId(user.getId())
+                                .stream()
+                                .map(follow -> follow.getFollowing().getId())
+                                .toList();
+
+                return postRepository
+                                .findByAuthorIdInOrderByCreatedAtDesc(
+                                                followingIds)
+                                .stream()
+                                .map(post -> new PostResponse(
+                                                post.getId(),
+                                                post.getTitle(),
+                                                post.getContent(),
+                                                post.getAuthor().getId(),
+                                                post.getAuthor().getUsername(),
+                                                post.getMediaUrl(),
+                                                post.getMediaType(),
+                                                post.getCreatedAt()))
+                                .toList();
+        }
 }
