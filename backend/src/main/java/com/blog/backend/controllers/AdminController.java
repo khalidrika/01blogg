@@ -9,17 +9,17 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import com.blog.backend.dto.ReportResponse;
 
 import com.blog.backend.dto.PostResponse;
 import com.blog.backend.dto.UserResponse;
-import com.blog.backend.entity.Report;
 import com.blog.backend.repository.UserRepository;
 import com.blog.backend.services.AdminService;
 import com.blog.backend.services.PostService;
 import com.blog.backend.services.ReportService;
 import com.blog.backend.entity.User;
 
-import lombok.RequiredArgsConstructor;
+import lombok.RequiredArgsConstructor;  
 
 @RestController
 @RequiredArgsConstructor
@@ -32,7 +32,7 @@ public class AdminController {
     private final AdminService adminService;
 
     @GetMapping("/reports")
-    public List<Report> getAllReports() {
+    public List<ReportResponse> getAllReports() {
         return reportService.getAllReports();
     }
 

@@ -6,6 +6,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import com.blog.backend.dto.ReportRequest;
+import com.blog.backend.dto.ReportResponse;
 import com.blog.backend.entity.Report;
 import com.blog.backend.entity.User;
 import com.blog.backend.repository.ReportRepository;
@@ -43,7 +44,18 @@ public class ReportService {
         reportRepository.save(report);
     }
 
-    public List<Report> getAllReports() {
-        return reportRepository.findAll();
-    }
+    public List<ReportResponse> getAllReports() {
+
+        return reportRepository.findAll()
+                .stream()
+                .map(report -> new ReportResponse(
+                        report.getId(),
+                        report.getReporter().getId(),
+                        report.getReporter().getUsername(),
+                        report.getReportedUser().getId(),
+                        report.getReportedUser().getUsername(),
+                        report.getReason(),
+                        report.getCreatedAt()))
+                .toList();
+    }   
 }

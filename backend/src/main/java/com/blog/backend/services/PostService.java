@@ -257,6 +257,19 @@ public class PostService {
                                         "You cannot delete this post");
                 }
 
+                if (post.getMediaUrl() != null) {
+
+                        Path mediaFile = Paths.get(
+                                        post.getMediaUrl()
+                                                        .replaceFirst("^/uploads/", "uploads/"));
+
+                        try {
+                                Files.deleteIfExists(mediaFile);
+                        } catch (IOException e) {
+                                throw new RuntimeException("Could not delete media file");
+                        }
+                }
+
                 postRepository.delete(post);
         }
 
@@ -281,9 +294,20 @@ public class PostService {
         public void adminDeletePost(Long postId) {
 
                 Post post = postRepository.findById(postId)
-                                .orElseThrow(
-                                                () -> new PostNotFoundException(
-                                                                "Post not found"));
+                                .orElseThrow(() -> new PostNotFoundException("Post not found"));
+
+                if (post.getMediaUrl() != null) {
+
+                        Path mediaFile = Paths.get(
+                                        post.getMediaUrl()
+                                                        .replaceFirst("^/uploads/", "uploads/"));
+
+                        try {
+                                Files.deleteIfExists(mediaFile);
+                        } catch (IOException e) {
+                                throw new RuntimeException("Could not delete media file");
+                        }
+                }
 
                 postRepository.delete(post);
         }
