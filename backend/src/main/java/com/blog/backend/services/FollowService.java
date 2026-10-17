@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import com.blog.backend.dto.UserResponse;
 import com.blog.backend.entity.Follow;
 import com.blog.backend.entity.User;
+import com.blog.backend.exception.UserNotFoundException;
 import com.blog.backend.repository.FollowRepository;
 import com.blog.backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -30,7 +31,7 @@ public class FollowService {
         User follower = userRepository.findByEmail(email);
 
         User following = userRepository.findById(followingId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
 
         Optional<Follow> existingFollow = followRepository.findByFollowerIdAndFollowingId(
                 follower.getId(),

@@ -20,6 +20,7 @@ import com.blog.backend.exception.PostNotFoundException;
 import com.blog.backend.repository.FollowRepository;
 import com.blog.backend.repository.PostRepository;
 import com.blog.backend.repository.UserRepository;
+import com.blog.backend.exception.BadRequestException;
 
 import lombok.RequiredArgsConstructor;
 
@@ -54,11 +55,11 @@ public class PostService {
                         MultipartFile media) {
 
                 if (title == null || title.isBlank()) {
-                        throw new RuntimeException("Title is required");
+                        throw new BadRequestException("Title is required");
                 }
 
                 if (content == null || content.isBlank()) {
-                        throw new RuntimeException("Content is required");
+                        throw new BadRequestException("Content is required");
                 }
 
                 String email = SecurityContextHolder
@@ -75,24 +76,41 @@ public class PostService {
                 post.setAuthor(user);
                 post.setCreatedAt(LocalDateTime.now());
 
-                if (media != null && !media.isEmpty()) {
+                if (media != null) {
 
-                        String contentType = media.getContentType();
-
-                        if (contentType != null && contentType.startsWith("image/")) {
-
-                                post.setMediaType("image");
-
-                        } else if (contentType != null && contentType.startsWith("video/")) {
-
-                                post.setMediaType("video");
-
-                        } else {
-
-                                throw new RuntimeException(
-                                                "Only images and videos are allowed");
+                        if (media.isEmpty()) {
+                                throw new BadRequestException("Media file cannot be empty");
                         }
 
+                        String originalName = media.getOriginalFilename();
+                        String contentType = media.getContentType();
+
+                        if (originalName == null) {
+                                throw new BadRequestException("Invalid media file");
+                        }
+
+                        String lowerName = originalName.toLowerCase();
+
+                        boolean validImage = (lowerName.endsWith(".png")
+                                        || lowerName.endsWith(".jpg")
+                                        || lowerName.endsWith(".jpeg"))
+                                        && contentType != null
+                                        && contentType.startsWith("image/");
+
+                        boolean validVideo = lowerName.endsWith(".mp4")
+                                        && contentType != null
+                                        && contentType.equals("video/mp4");
+
+                        if (!validImage && !validVideo) {
+                                throw new BadRequestException(
+                                                "Only PNG, JPG, JPEG and MP4 files are allowed");
+                        }
+
+                        if (validImage) {
+                                post.setMediaType("image");
+                        } else {
+                                post.setMediaType("video");
+                        }
                         try {
 
                                 Path uploadDirectory = Paths.get("uploads");
@@ -170,28 +188,50 @@ public class PostService {
                 }
 
                 if (title == null || title.isBlank()) {
-                        throw new RuntimeException("Title is required");
+                        throw new BadRequestException("Title is required");
                 }
 
                 if (content == null || content.isBlank()) {
-                        throw new RuntimeException("Content is required");
+                        throw new BadRequestException("Content is required");
                 }
 
                 post.setTitle(title);
                 post.setContent(content);
 
-                if (media != null && !media.isEmpty()) {
+                if (media != null) {
 
+                        if (media.isEmpty()) {
+                                throw new BadRequestException("Media file cannot be empty");
+                        }
+
+                        String originalName = media.getOriginalFilename();
                         String contentType = media.getContentType();
 
-                        if (contentType != null && contentType.startsWith("image/")) {
+                        if (originalName == null) {
+                                throw new BadRequestException("Invalid media file");
+                        }
+
+                        String lowerName = originalName.toLowerCase();
+
+                        boolean validImage = (lowerName.endsWith(".png")
+                                        || lowerName.endsWith(".jpg")
+                                        || lowerName.endsWith(".jpeg"))
+                                        && contentType != null
+                                        && contentType.startsWith("image/");
+
+                        boolean validVideo = lowerName.endsWith(".mp4")
+                                        && contentType != null
+                                        && contentType.equals("video/mp4");
+
+                        if (!validImage && !validVideo) {
+                                throw new BadRequestException(
+                                                "Only PNG, JPG, JPEG and MP4 files are allowed");
+                        }
+
+                        if (validImage) {
                                 post.setMediaType("image");
-
-                        } else if (contentType != null && contentType.startsWith("video/")) {
-                                post.setMediaType("video");
-
                         } else {
-                                throw new RuntimeException("Only images and videos are allowed");
+                                post.setMediaType("video");
                         }
 
                         try {

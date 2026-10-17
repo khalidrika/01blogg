@@ -9,6 +9,7 @@ import com.blog.backend.dto.ReportRequest;
 import com.blog.backend.dto.ReportResponse;
 import com.blog.backend.entity.Report;
 import com.blog.backend.entity.User;
+import com.blog.backend.exception.UserNotFoundException;
 import com.blog.backend.repository.ReportRepository;
 import com.blog.backend.repository.UserRepository;
 import java.util.List;
@@ -32,7 +33,7 @@ public class ReportService {
         User reporter = userRepository.findByEmail(email);
 
         User reportedUser = userRepository.findById(reportedUserId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
 
         Report report = new Report();
 

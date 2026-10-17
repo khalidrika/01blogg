@@ -18,6 +18,7 @@ import com.blog.backend.services.AdminService;
 import com.blog.backend.services.PostService;
 import com.blog.backend.services.ReportService;
 import com.blog.backend.entity.User;
+import com.blog.backend.exception.UserNotFoundException;
 
 import lombok.RequiredArgsConstructor;  
 
@@ -65,7 +66,7 @@ public class AdminController {
     public ResponseEntity<Void> banUser(@PathVariable Long userId) {
 
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
 
         user.setBanned(true);
 

@@ -4,6 +4,7 @@ import org.springframework.stereotype.Service;
 
 import com.blog.backend.dto.ProfileResponse;
 import com.blog.backend.entity.User;
+import com.blog.backend.exception.UserNotFoundException;
 import com.blog.backend.repository.FollowRepository;
 import com.blog.backend.repository.UserRepository;
 
@@ -19,7 +20,7 @@ public class ProfileService {
     public ProfileResponse getProfile(Long userId) {
 
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
 
         long followersCount =
                 followRepository.countByFollowingId(userId);

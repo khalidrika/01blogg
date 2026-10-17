@@ -4,6 +4,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.blog.backend.entity.User;
+import com.blog.backend.exception.UserNotFoundException;
 import com.blog.backend.repository.CommentRepository;
 import com.blog.backend.repository.FollowRepository;
 import com.blog.backend.repository.LikeRepository;
@@ -30,7 +31,7 @@ public class AdminService {
     public void deleteUser(Long userId) {
 
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
 
         commentRepository.deleteByAuthorId(userId);
 
