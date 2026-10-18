@@ -1,0 +1,21 @@
+<h2>Profile</h2>
+
+<div *ngIf="profile()">
+
+  <p>
+    Username: {{ profile().username }}
+  </p>
+
+  <p>
+    Email: {{ profile().email }}
+  </p>
+
+  <p>
+    Followers: {{ profile().followersCount }}
+  </p>
+
+  <p>
+    Following: {{ profile().followingCount }}
+  </p>
+
+</div>

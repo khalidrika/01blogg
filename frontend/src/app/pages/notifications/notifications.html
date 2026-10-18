@@ -1,0 +1,20 @@
+<h2>Notifications</h2>
+
+<div *ngFor="let notification of notifications()">
+
+    <p>
+        {{ notification.message }}
+    </p>
+
+    <p>
+        Status:
+        {{ notification.read ? 'Read' : 'Unread' }}
+    </p>
+
+    <button *ngIf="!notification.read" (click)="markAsRead(notification.id)">
+        Mark as read
+    </button>
+
+    <hr>
+
+</div>

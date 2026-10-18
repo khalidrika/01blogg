@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-login',
@@ -12,7 +13,10 @@ export class Login {
 
   email = '';
   password = '';
-  constructor(private http: HttpClient) { }
+  constructor(
+    private http: HttpClient,
+    private router: Router
+  ) { }
   login() {
 
     const body = {
@@ -28,7 +32,10 @@ export class Login {
         console.log('LOGIN SUCCESS:', response);
 
         localStorage.setItem('token', response.token);
-      },  
+        localStorage.setItem('userId', response.id.toString());
+        this.router.navigate(['/feed']);
+
+      },
       error: (error) => {
         console.log('LOGIN ERROR:', error);
       }

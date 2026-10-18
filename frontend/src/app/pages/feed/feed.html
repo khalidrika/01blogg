@@ -1,0 +1,54 @@
+<h2>Feed</h2>
+
+<div *ngFor="let post of posts()">
+
+    <h3>{{ post.title }}</h3>
+
+    <p>{{ post.content }}</p>
+
+    <p>By: {{ post.authorusername }}</p>
+
+    <!-- image -->
+    <img *ngIf="post.mediaUrl && post.mediaType === 'image'" [src]="'http://localhost:8080' + post.mediaUrl"
+        width="300">
+
+    <!-- video -->
+    <video *ngIf="post.mediaUrl && post.mediaType === 'video'" [src]="'http://localhost:8080' + post.mediaUrl"
+        width="300" controls>
+    </video>
+
+    <!-- likes -->
+    <p>
+        <button (click)="likePost(post.id)">
+            Like
+        </button>
+
+        Likes: {{ likeCounts()[post.id] || 0 }}
+    </p>
+
+    <!-- comments -->
+    <h4>Comments</h4>
+
+    <div *ngFor="let comment of commentsByPost()[post.id] || []">
+
+        <p>
+            <strong>{{ comment.authorUsername }}</strong>:
+            {{ comment.content }}
+        </p>
+        <button *ngIf="comment.authorId === currentUserId" (click)="deleteComment(comment.id, post.id)">
+            Delete
+        </button>
+
+    </div>
+
+    <!-- add comment -->
+    <input type="text" placeholder="Write a comment..." [value]="commentTexts()[post.id] || ''"
+        (input)="setCommentText(post.id, $any($event.target).value)">
+
+    <button (click)="addComment(post.id)">
+        Add comment
+    </button>
+
+    <hr>
+
+</div>
