@@ -32,4 +32,10 @@ public class NotificationController {
 
         return ResponseEntity.noContent().build();
     }
+
+    @PutMapping("/{id}/unread")
+    public ResponseEntity<Void> markAsUnread(@PathVariable Long id) {
+        notificationService.markAsUnread(id);
+        return ResponseEntity.noContent().build();
+    }
 }

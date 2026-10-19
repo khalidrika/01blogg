@@ -17,10 +17,8 @@ import com.blog.backend.repository.UserRepository;
 import com.blog.backend.services.AdminService;
 import com.blog.backend.services.PostService;
 import com.blog.backend.services.ReportService;
-import com.blog.backend.entity.User;
-import com.blog.backend.exception.UserNotFoundException;
 
-import lombok.RequiredArgsConstructor;  
+import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequiredArgsConstructor
@@ -45,7 +43,8 @@ public class AdminController {
                         user.getId(),
                         user.getUsername(),
                         user.getEmail(),
-                        user.getRole().name()))
+                        user.getRole().name(),
+                        user.isBanned()))
                 .toList();
     }
 
@@ -65,12 +64,7 @@ public class AdminController {
     @PutMapping("/users/{userId}/ban")
     public ResponseEntity<Void> banUser(@PathVariable Long userId) {
 
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new UserNotFoundException("User not found"));
-
-        user.setBanned(true);
-
-        userRepository.save(user);
+        adminService.setUserBanned(userId, true);
 
         return ResponseEntity.noContent().build();
     }
@@ -79,6 +73,14 @@ public class AdminController {
     public ResponseEntity<Void> deleteUser(@PathVariable Long userId) {
 
         adminService.deleteUser(userId);
+
+        return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/users/{userId}/unban")
+    public ResponseEntity<Void> unbanUser(@PathVariable Long userId) {
+
+        adminService.setUserBanned(userId, false);
 
         return ResponseEntity.noContent().build();
     }

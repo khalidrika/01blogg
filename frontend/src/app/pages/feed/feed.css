@@ -1,0 +1,12 @@
+.feed-page { max-width: 800px; margin: 28px auto; padding: 0 18px 32px; color: #172033; overflow-wrap: anywhere; }
+header { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+h1 { margin: 0 0 16px; }
+.post-card { border: 1px solid #cbd5e1; border-radius: 10px; padding: 20px; margin: 20px 0; }
+h2 { margin-top: 0; }
+.content { white-space: pre-wrap; }
+time { color: #475569; font-size: .9rem; }
+img, video { display: block; max-width: 100%; max-height: 500px; border-radius: 6px; }
+button { font: inherit; padding: 8px 12px; border: 1px solid #64748b; border-radius: 6px; background: white; cursor: pointer; }
+button:disabled { opacity: .6; cursor: wait; }
+.error { color: #b91c1c; }
+@media (max-width: 480px) { .post-card { padding: 14px; } }

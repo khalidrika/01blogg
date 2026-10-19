@@ -2,6 +2,7 @@ package com.blog.backend.config;
 
 import java.io.IOException;
 import java.util.List;
+import io.jsonwebtoken.JwtException;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -27,6 +28,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final UserRepository userRepository;
 
     @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        String path = request.getRequestURI().substring(request.getContextPath().length());
+        return path.equals("/api/login") || path.equals("/api/register");
+    }
+
+    @Override
     protected void doFilterInternal(
             HttpServletRequest request,
             HttpServletResponse response,
@@ -46,13 +53,20 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         try {
             email = jwtService.extractEmail(token);
-            user = userRepository.findByEmail(email);
-            if (user.isBanned()) {
-                response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-                return;
-            }
-        } catch (Exception e) {
+        } catch (JwtException | IllegalArgumentException e) {
             filterChain.doFilter(request, response);
+            return;
+        }
+
+        user = userRepository.findByEmail(email);
+        if (user == null) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+        if (user.isBanned()) {
+            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            response.setContentType("application/json");
+            response.getWriter().write("{\"code\":\"ACCOUNT_BANNED\",\"message\":\"Your account has been banned\"}");
             return;
         }
 

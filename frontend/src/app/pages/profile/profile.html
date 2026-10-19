@@ -1,21 +1,90 @@
-<h2>Profile</h2>
+<app-navbar></app-navbar>
 
-<div *ngIf="profile()">
+<main class="profile-page">
+  <h1>Profile</h1>
+  @if (postUpdated) { <p role="status">Post updated successfully.</p> }
+  @if (profileLoading()) {
+    <p role="status">Loading profile...</p>
+  }
+  @if (profileError()) {
+    <p class="error" role="alert">{{ profileError() }}</p>
+    @if (profileError() !== 'Invalid profile address.' && profileError() !== 'User not found.') {
+      <button type="button" (click)="loadProfile()">Retry profile</button>
+    }
+  }
 
-  <p>
-    Username: {{ profile().username }}
-  </p>
+  @if (profile(); as user) {
+    <section class="profile-card" aria-label="User information">
+      <h2>{{ user.username }}</h2>
+      <p>{{ user.email }}</p>
+      <p>{{ user.followersCount }} followers · {{ user.followingCount }} following</p>
+      @if (userId === currentUserId) {
+        <a routerLink="/create-post">Create a post</a>
+      } @else {
+        <button type="button" (click)="followUser()" [disabled]="followPending() || !followStatusLoaded()">
+          {{ followPending() ? 'Please wait...' : !followStatusLoaded() ? 'Follow unavailable' : isFollowing() ? 'Unfollow' : 'Follow' }}
+        </button>
+        @if (followStatusLoading()) { <p role="status">Loading follow status...</p> }
+        @if (followError()) {
+          <p class="error" role="alert">{{ followError() }}</p>
+          @if (!followStatusLoaded() && !followStatusLoading()) {
+            <button type="button" (click)="loadFollowStatus()">Retry follow status</button>
+          }
+        }
+        <div class="report-form">
+          <label for="report-reason">Report user — reason</label>
+          <textarea id="report-reason" rows="3" placeholder="Describe the inappropriate content or behavior."
+            [value]="reportReason()" [maxLength]="reportReasonLimit" [readOnly]="reportConfirmation() !== null"
+            aria-describedby="report-help" [attr.aria-invalid]="reportError() ? 'true' : null"
+            (input)="reportReason.set($any($event.target).value)"></textarea>
+          <p id="report-help">{{ reportReason().length }}/{{ reportReasonLimit }} characters. Reports are visible only to administrators.</p>
+          @if (reportConfirmation(); as reason) {
+            <div class="report-confirmation" role="group" aria-labelledby="report-confirm-title" [attr.aria-busy]="reporting()">
+              <h3 id="report-confirm-title">Report {{ user.username }}?</h3>
+              <p>Review your reason before sending:</p>
+              <blockquote>{{ reason }}</blockquote>
+              <button type="button" (click)="confirmReport()" [disabled]="reporting()">{{ reporting() ? 'Sending...' : 'Confirm report' }}</button>
+              <button type="button" (click)="cancelReport()" [disabled]="reporting()">Cancel</button>
+            </div>
+          } @else {
+            <button type="button" (click)="reportUser()">Report</button>
+          }
+          @if (reportError()) { <p class="error" role="alert">{{ reportError() }}</p> }
+          @if (reportStatus()) { <p class="success" role="status">{{ reportStatus() }}</p> }
+        </div>
+      }
+      @if (actionStatus()) { <p role="status">{{ actionStatus() }}</p> }
+    </section>
 
-  <p>
-    Email: {{ profile().email }}
-  </p>
-
-  <p>
-    Followers: {{ profile().followersCount }}
-  </p>
-
-  <p>
-    Following: {{ profile().followingCount }}
-  </p>
-
-</div>
+    <section aria-labelledby="posts-title" [attr.aria-busy]="postsLoading()">
+      <h2 id="posts-title">{{ userId === currentUserId ? 'My posts' : user.username + "'s posts" }}</h2>
+      @if (postStatus()) { <p role="status">{{ postStatus() }}</p> }
+      @if (postsLoading()) {
+        <p role="status">Loading posts...</p>
+      } @else if (postsError()) {
+        <p class="error" role="alert">{{ postsError() }}</p>
+        <button type="button" (click)="loadPosts()">Retry posts</button>
+      } @else {
+        @for (post of posts(); track post.id) {
+          <article class="post-card" [attr.data-post-id]="post.id">
+            <h3>{{ post.title }}</h3>
+            @if (post.authorid === currentUserId) {
+              <a [routerLink]="['/posts', post.id, 'edit']">Edit</a>
+              <app-delete-post [post]="post" (removed)="onPostRemoved($event)"></app-delete-post>
+            }
+            <p class="post-meta">By {{ post.authorusername }} · <time [attr.datetime]="post.createdAt">{{ post.createdAt | date:'medium' }}</time></p>
+            <p class="post-content">{{ post.content }}</p>
+            @if (post.mediaUrl && post.mediaType === 'image') {
+              <img [src]="mediaOrigin + post.mediaUrl" [alt]="post.title" loading="lazy">
+            } @else if (post.mediaUrl && post.mediaType === 'video') {
+              <video [src]="mediaOrigin + post.mediaUrl" [attr.aria-label]="post.title" controls preload="metadata"></video>
+            }
+            <app-post-interactions [postId]="post.id" (unavailable)="onPostUnavailable($event)" />
+          </article>
+        } @empty {
+          <p role="status">{{ userId === currentUserId ? 'You have not published any posts yet.' : 'This user has not published any posts yet.' }}</p>
+        }
+      }
+    </section>
+  }
+</main>

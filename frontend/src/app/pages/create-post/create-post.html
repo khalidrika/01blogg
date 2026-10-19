@@ -1,0 +1,62 @@
+<app-navbar></app-navbar>
+
+<h2>Create Post</h2>
+
+<div>
+    <label>Title</label>
+    <br>
+
+    <input
+        type="text"
+        placeholder="Post title"
+        [(ngModel)]="title"
+    >
+</div>
+
+<br>
+
+<div>
+    <label>Content</label>
+    <br>
+
+    <textarea
+        placeholder="Write your post..."
+        [(ngModel)]="content">
+    </textarea>
+</div>
+
+<br>
+
+<div>
+    <label>Image or Video</label>
+    <br>
+
+    <input
+        type="file"
+        accept="image/png,image/jpeg,video/mp4"
+        (change)="onFileSelected($event)"
+    >
+</div>
+
+<br>
+
+<!-- image preview -->
+<img
+    *ngIf="previewUrl && previewType === 'image'"
+    [src]="previewUrl"
+    width="300"
+>
+
+<!-- video preview -->
+<video
+    *ngIf="previewUrl && previewType === 'video'"
+    [src]="previewUrl"
+    width="300"
+    controls>
+</video>
+
+<br><br>
+
+<button (click)="createPost()">
+    Publish
+</button>

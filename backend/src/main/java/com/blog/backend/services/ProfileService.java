@@ -1,4 +1,7 @@
+
 package com.blog.backend.services;
+
+import java.util.List;
 
 import org.springframework.stereotype.Service;
 
@@ -20,7 +23,8 @@ public class ProfileService {
     public ProfileResponse getProfile(Long userId) {
 
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new UserNotFoundException("User not found"));
+                .orElseThrow(() ->
+                        new UserNotFoundException("User not found"));
 
         long followersCount =
                 followRepository.countByFollowingId(userId);
@@ -36,5 +40,16 @@ public class ProfileService {
                 followersCount,
                 followingCount
         );
+    }
+
+    public List<ProfileResponse> getAllProfiles() {
+
+        return userRepository.findAll()
+                .stream()
+                .filter(user -> !user.isBanned())
+                .filter(user ->
+                        !"ADMIN".equals(user.getRole().name()))
+                .map(user -> getProfile(user.getId()))
+                .toList();
     }
 }

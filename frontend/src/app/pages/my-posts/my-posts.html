@@ -1,0 +1,33 @@
+<app-navbar></app-navbar>
+
+<main class="posts-page">
+  <h1>My Posts</h1>
+  <p><a routerLink="/create-post">Create a post</a></p>
+  @if (status()) { <p role="status">{{ status() }}</p> }
+  @if (loading()) {
+    <p role="status">Loading posts...</p>
+  } @else if (error()) {
+    <p class="error" role="alert">{{ error() }}</p>
+    <button type="button" (click)="loadMyPosts()">Retry</button>
+  } @else {
+    @for (post of posts(); track post.id) {
+      <article [attr.data-post-id]="post.id">
+        <h2>{{ post.title }}</h2>
+        @if (post.authorid === currentUserId) {
+          <a [routerLink]="['/posts', post.id, 'edit']">Edit</a>
+          <app-delete-post [post]="post" (removed)="onPostRemoved($event)"></app-delete-post>
+        }
+        <p class="content">{{ post.content }}</p>
+        <p><time [attr.datetime]="post.createdAt">{{ post.createdAt | date:'medium' }}</time></p>
+        @if (post.mediaUrl && post.mediaType === 'image') {
+          <img [src]="mediaOrigin + post.mediaUrl" [alt]="post.title" loading="lazy">
+        } @else if (post.mediaUrl && post.mediaType === 'video') {
+          <video [src]="mediaOrigin + post.mediaUrl" controls preload="metadata" [attr.aria-label]="post.title"></video>
+        }
+        <app-post-interactions [postId]="post.id" (unavailable)="onPostUnavailable($event)" />
+      </article>
+    } @empty {
+      <p role="status">You have not published any posts yet.</p>
+    }
+  }
+</main>

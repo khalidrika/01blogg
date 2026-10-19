@@ -1,0 +1,17 @@
+<main class="auth-page">
+  <h1>Create your 01Blog account</h1>
+  @if (error()) { <p class="error" role="alert">{{ error() }}</p> }
+  <form #form="ngForm" (ngSubmit)="form.valid && register()">
+    <label for="username">Username</label>
+    <input id="username" name="username" [(ngModel)]="username" required autocomplete="username">
+    <label for="email">Email</label>
+    <input id="email" type="email" name="email" [(ngModel)]="email" required email autocomplete="email">
+    <label for="password">Password</label>
+    <input id="password" type="password" name="password" [(ngModel)]="password" required minlength="6" autocomplete="new-password" aria-describedby="password-help">
+    <small id="password-help">Use at least 6 characters.</small>
+    <label for="confirm-password">Confirm password</label>
+    <input id="confirm-password" type="password" name="confirmPassword" [(ngModel)]="confirmPassword" required autocomplete="new-password">
+    <button type="submit" [disabled]="form.invalid || pending()">{{ pending() ? 'Creating account...' : 'Create account' }}</button>
+  </form>
+  <p>Already registered? <a routerLink="/login">Log in</a></p>
+</main>

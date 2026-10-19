@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.blog.backend.entity.Follow;
 import com.blog.backend.entity.Notification;
@@ -15,6 +16,8 @@ import com.blog.backend.repository.UserRepository;
 import com.blog.backend.dto.NotificationResponse;
 import lombok.RequiredArgsConstructor;
 import com.blog.backend.exception.NotificationForbiddenException;
+import com.blog.backend.exception.NotificationNotFoundException;
+import com.blog.backend.exception.UserNotFoundException;
 
 @Service
 @RequiredArgsConstructor
@@ -22,8 +25,9 @@ public class NotificationService {
 
     private final NotificationRepository notificationRepository;
     private final FollowRepository followRepository;
-    private final UserRepository userRepository; //
+    private final UserRepository userRepository;
 
+    @Transactional
     public void notifyFollowersAboutNewPost(User author) {
 
         List<Follow> followers = followRepository.findByFollowingId(author.getId());
@@ -45,14 +49,9 @@ public class NotificationService {
         }
     }
 
+    @Transactional(readOnly = true)
     public List<NotificationResponse> getMyNotifications() {
-
-        String email = SecurityContextHolder
-                .getContext()
-                .getAuthentication()
-                .getName();
-
-        User user = userRepository.findByEmail(email);
+        User user = currentUser();
 
         return notificationRepository
                 .findByUserIdOrderByCreatedAtDesc(user.getId())
@@ -65,25 +64,37 @@ public class NotificationService {
                 .toList();
     }
 
+    @Transactional
     public void markAsRead(Long notificationId) {
+        setRead(notificationId, true);
+    }
 
-        String email = SecurityContextHolder
-                .getContext()
-                .getAuthentication()
-                .getName();
+    @Transactional
+    public void markAsUnread(Long notificationId) {
+        setRead(notificationId, false);
+    }
 
-        User currentUser = userRepository.findByEmail(email);
+    private void setRead(Long notificationId, boolean read) {
+        User currentUser = currentUser();
 
         Notification notification = notificationRepository
                 .findById(notificationId)
-                .orElseThrow(() -> new RuntimeException("Notification not found"));
+                .orElseThrow(() -> new NotificationNotFoundException("Notification not found"));
 
         if (!notification.getUser().getId().equals(currentUser.getId())) {
             throw new NotificationForbiddenException("You cannot modify this notification");
         }
 
-        notification.setRead(true);
+        if (notification.isRead() != read) {
+            notification.setRead(read);
+            notificationRepository.save(notification);
+        }
+    }
 
-        notificationRepository.save(notification);
+    private User currentUser() {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userRepository.findByEmail(email);
+        if (user == null) throw new UserNotFoundException("User not found");
+        return user;
     }
 }

@@ -1,128 +1,49 @@
 import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, inject, OnDestroy, OnInit, signal } from '@angular/core';
+import { RouterLink } from '@angular/router';
+import { Subscription } from 'rxjs';
+import { Navbar } from '../../shared/navbar/navbar';
+import { PostInteractions } from '../../shared/post-interactions/post-interactions';
+import { API_URL } from '../../core/auth/auth.service';
+import { ProfilePost } from '../../core/services/profile.service';
 
 @Component({
   selector: 'app-feed',
-  imports: [CommonModule],
+  imports: [CommonModule, Navbar, RouterLink, PostInteractions],
   templateUrl: './feed.html',
   styleUrl: './feed.css'
 })
-export class Feed implements OnInit {
+export class Feed implements OnInit, OnDestroy {
+  private readonly http = inject(HttpClient);
+  private request?: Subscription;
+  readonly posts = signal<ProfilePost[]>([]);
+  readonly loading = signal(false);
+  readonly loaded = signal(false);
+  readonly error = signal('');
+  readonly status = signal('');
+  readonly mediaOrigin = new URL(API_URL).origin;
+  private readonly unavailableIds = new Set<number>();
 
-  posts = signal<any[]>([]);
+  ngOnInit(): void { this.loadFeed(); }
+  ngOnDestroy(): void { this.request?.unsubscribe(); }
 
-  constructor(private http: HttpClient) {
-  }
-  ngOnInit() {
-    this.http
-      .get<any[]>('http://localhost:8080/api/posts/feed')
-      .subscribe({
-        next: (response) => {
-          console.log('FEED:', response);
-          this.posts.set(response);
-          response.forEach(post => {
-            this.loadLikeCount(post.id);
-            this.loadComments(post.id);
-          });
-        },
-        error: (error) => {
-          console.log('FEED ERROR:', error);
-        }
-      });
-  }
-
-  //like and count like
-  likeCounts = signal<{ [postId: number]: number }>({});
-
-  loadLikeCount(postId: number) {
-    this.http
-      .get<number>(`http://localhost:8080/api/posts/${postId}/likes/count`)
-      .subscribe({
-        next: (count) => {
-          this.likeCounts.update(counts => ({
-            ...counts,
-            [postId]: count
-          }));
-        },
-        error: (error) => {
-          console.log('LIKE COUNT ERROR:', error);
-        }
-      });
-  }
-  likePost(postId: number) {
-    this.http
-      .post(`http://localhost:8080/api/posts/${postId}/likes`, {})
-      .subscribe({
-        next: () => {
-          this.loadLikeCount(postId);
-        },
-        error: (error) => {
-          console.log('LIKE ERROR:', error);
-        }
-      });
-  }
-  commentsByPost = signal<{ [postId: number]: any[] }>({});
-  loadComments(postId: number) {
-    this.http
-      .get<any[]>(`http://localhost:8080/api/posts/${postId}/comments`)
-      .subscribe({
-        next: (comments) => {
-          console.log('COMMENTS:', comments);
-
-          this.commentsByPost.update(current => ({
-            ...current,
-            [postId]: comments
-          }));
-        },
-        error: (error) => {
-          console.log('COMMENTS ERROR:', error);
-        }
-      });
-  }
-  commentTexts = signal<{ [postId: number]: string }>({});
-  setCommentText(postId: number, value: string) {
-    this.commentTexts.update(current => ({
-      ...current,
-      [postId]: value
-    }));
+  loadFeed(): void {
+    this.request?.unsubscribe();
+    this.loading.set(true); this.error.set('');
+    this.request = this.http.get<ProfilePost[]>(`${API_URL}/posts/feed`).subscribe({
+      next: posts => {
+        // A feed snapshot started before a post deletion must not restore it.
+        this.posts.set(posts.filter(post => !this.unavailableIds.has(post.id)));
+        this.loading.set(false); this.loaded.set(true);
+      },
+      error: () => { this.loading.set(false); this.error.set('Could not load your feed. Please try again.'); }
+    });
   }
 
-  addComment(postId: number) {
-    const content = this.commentTexts()[postId];
-
-    if (!content || !content.trim()) {
-      return;
-    }
-
-    this.http
-      .post(`http://localhost:8080/api/posts/${postId}/comments`, {
-        content: content
-      })
-      .subscribe({
-        next: () => {
-          this.setCommentText(postId, '');
-          this.loadComments(postId);
-        },
-        error: (error) => {
-          console.log('ADD COMMENT ERROR:', error);
-        }
-      });
-  }
-
-  deleteComment(commentId: number, postId: number) {
-    this.http
-      .delete(`http://localhost:8080/api/posts/comments/${commentId}`)
-      .subscribe({
-        next: () => {
-          this.loadComments(postId);
-        },
-        error: (error) => {
-          console.log('DELETE COMMENT ERROR:', error);
-        }
-      });
-  }
-  get currentUserId(): number {
-    return Number(localStorage.getItem('userId'));
+  removeUnavailablePost(id: number): void {
+    this.unavailableIds.add(id);
+    this.posts.update(posts => posts.filter(post => post.id !== id));
+    this.status.set('A post is no longer available and has been removed from your feed.');
   }
 }

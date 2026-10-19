@@ -10,6 +10,9 @@ import java.util.UUID;
 
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.blog.backend.dto.PostResponse;
@@ -18,13 +21,17 @@ import com.blog.backend.entity.User;
 import com.blog.backend.exception.PostForbiddenException;
 import com.blog.backend.exception.PostNotFoundException;
 import com.blog.backend.repository.FollowRepository;
+import com.blog.backend.repository.CommentRepository;
+import com.blog.backend.repository.LikeRepository;
 import com.blog.backend.repository.PostRepository;
 import com.blog.backend.repository.UserRepository;
 import com.blog.backend.exception.BadRequestException;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class PostService {
 
@@ -32,6 +39,8 @@ public class PostService {
         private final UserRepository userRepository;
         private final NotificationService notificationService;
         private final FollowRepository followRepository;
+        private final CommentRepository commentRepository;
+        private final LikeRepository likeRepository;
 
         public List<PostResponse> getAllPosts() {
 
@@ -277,40 +286,15 @@ public class PostService {
                                 savedPost.getCreatedAt());
         }
 
+        @Transactional
         public void deletePost(Long id) {
-
                 Post post = postRepository.findById(id)
-                                .orElseThrow(
-                                                () -> new PostNotFoundException(
-                                                                "Post not found"));
-
-                String email = SecurityContextHolder
-                                .getContext()
-                                .getAuthentication()
-                                .getName();
-
-                if (!post.getAuthor()
-                                .getEmail()
-                                .equals(email)) {
-
-                        throw new PostForbiddenException(
-                                        "You cannot delete this post");
+                                .orElseThrow(() -> new PostNotFoundException("Post not found"));
+                String email = SecurityContextHolder.getContext().getAuthentication().getName();
+                if (!post.getAuthor().getEmail().equals(email)) {
+                        throw new PostForbiddenException("You cannot delete this post");
                 }
-
-                if (post.getMediaUrl() != null) {
-
-                        Path mediaFile = Paths.get(
-                                        post.getMediaUrl()
-                                                        .replaceFirst("^/uploads/", "uploads/"));
-
-                        try {
-                                Files.deleteIfExists(mediaFile);
-                        } catch (IOException e) {
-                                throw new RuntimeException("Could not delete media file");
-                        }
-                }
-
-                postRepository.delete(post);
+                deletePostAndRelations(post);
         }
 
         public List<PostResponse> getPostsByUserId(
@@ -331,25 +315,47 @@ public class PostService {
                                 .toList();
         }
 
+        @Transactional
         public void adminDeletePost(Long postId) {
-
                 Post post = postRepository.findById(postId)
                                 .orElseThrow(() -> new PostNotFoundException("Post not found"));
+                deletePostAndRelations(post);
+        }
 
+        private void deletePostAndRelations(Post post) {
+                Path mediaFile = null;
                 if (post.getMediaUrl() != null) {
-
-                        Path mediaFile = Paths.get(
-                                        post.getMediaUrl()
-                                                        .replaceFirst("^/uploads/", "uploads/"));
-
-                        try {
-                                Files.deleteIfExists(mediaFile);
-                        } catch (IOException e) {
-                                throw new RuntimeException("Could not delete media file");
+                        Path uploads = Paths.get("uploads").toAbsolutePath().normalize();
+                        String mediaUrl = post.getMediaUrl();
+                        if (!mediaUrl.startsWith("/uploads/")) {
+                                throw new BadRequestException("Invalid media path");
+                        }
+                        mediaFile = uploads.resolve(mediaUrl.substring("/uploads/".length())).normalize();
+                        // Uploads are stored directly inside this directory.
+                        if (!uploads.equals(mediaFile.getParent())) {
+                                throw new BadRequestException("Invalid media path");
                         }
                 }
 
+                commentRepository.deleteByPostId(post.getId());
+                likeRepository.deleteByPostId(post.getId());
                 postRepository.delete(post);
+
+                if (mediaFile != null) {
+                        Path fileToDelete = mediaFile;
+                        // Never remove media for a database deletion that rolls back.
+                        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                                @Override
+                                public void afterCommit() {
+                                        try {
+                                                Files.deleteIfExists(fileToDelete);
+                                        } catch (IOException e) {
+                                                // The post is already deleted; keep cleanup failures out of the API response.
+                                                log.warn("Could not clean up media for deleted post {}: {}", post.getId(), fileToDelete, e);
+                                        }
+                                }
+                        });
+                }
         }
 
         public List<PostResponse> getFeed() {

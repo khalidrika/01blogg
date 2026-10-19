@@ -1,0 +1,19 @@
+:host { display: block; margin-top: 20px; }
+.likes, header { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+header { justify-content: space-between; }
+h4 { margin: 0; }
+button, textarea { font: inherit; }
+button { padding: 7px 11px; border: 1px solid #64748b; border-radius: 6px; background: #fff; color: #172033; cursor: pointer; }
+button[aria-pressed="true"] { background: #dbeafe; border-color: #1d4ed8; }
+button:disabled { opacity: .6; cursor: wait; }
+button:focus-visible, textarea:focus-visible { outline: 3px solid #93c5fd; outline-offset: 2px; }
+.comments { border-top: 1px solid #cbd5e1; margin-top: 16px; padding-top: 16px; }
+.comment { border-bottom: 1px solid #e2e8f0; padding: 10px 0; }
+.comment p { margin: 8px 0; }
+.content { white-space: pre-wrap; overflow-wrap: anywhere; }
+time, .hint { color: #475569; font-size: .85rem; }
+label { display: block; margin: 16px 0 6px; }
+textarea { width: 100%; box-sizing: border-box; resize: vertical; padding: 8px; border: 1px solid #64748b; border-radius: 6px; }
+.hint { margin: 6px 0; }
+.error { color: #b91c1c; }
+.success { color: #166534; }

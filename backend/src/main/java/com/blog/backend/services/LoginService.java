@@ -23,13 +23,17 @@ public class LoginService {
         User user = userRepository.findByEmail(request.email());
 
         if (user == null) {
-            return ResponseEntity.badRequest().body(new ErrorResponse("Invalid email or password"));
+            return ResponseEntity.status(401).body(new ErrorResponse("Invalid email or password"));
         }
 
         boolean isPasswordMatch = passwordEncoder.matches(request.password(), user.getPassword());
 
         if (!isPasswordMatch) {
-            return ResponseEntity.badRequest().body(new ErrorResponse("Invalid email or password"));
+            return ResponseEntity.status(401).body(new ErrorResponse("Invalid email or password"));
+        }
+
+        if (user.isBanned()) {
+            return ResponseEntity.status(403).body(new ErrorResponse("Your account has been banned"));
         }
 
         String token = jwtService.generateToken(user.getEmail());

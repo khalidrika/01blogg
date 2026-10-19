@@ -5,6 +5,9 @@ import java.util.List;
 
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import com.blog.backend.exception.BadRequestException;
+import com.blog.backend.exception.UserNotFoundException;
 
 import com.blog.backend.dto.CommentRequest;
 import com.blog.backend.dto.CommentResponse;
@@ -28,7 +31,14 @@ public class CommentService {
         private final PostRepository postRepository;
         private final UserRepository userRepository;
 
+        @Transactional
         public CommentResponse createComment(Long postId, CommentRequest request) {
+                if (request == null || request.content() == null || request.content().isBlank()) {
+                        throw new BadRequestException("Comment content is required");
+                }
+                if (request.content().length() > 255) {
+                        throw new BadRequestException("Comment must be 255 characters or fewer");
+                }
 
                 String email = SecurityContextHolder
                                 .getContext()
@@ -36,13 +46,14 @@ public class CommentService {
                                 .getName();
 
                 User user = userRepository.findByEmail(email);
+                if (user == null) throw new UserNotFoundException("User not found");
 
                 Post post = postRepository.findById(postId)
                                 .orElseThrow(() -> new PostNotFoundException("Post not found"));
 
                 Comment comment = new Comment();
 
-                comment.setContent(request.content());
+                comment.setContent(request.content().trim());
                 comment.setAuthor(user);
                 comment.setPost(post);
                 comment.setCreatedAt(LocalDateTime.now());
@@ -58,12 +69,13 @@ public class CommentService {
                                 savedComment.getCreatedAt());
         }
 
+        @Transactional(readOnly = true)
         public List<CommentResponse> getCommentsByPostId(Long postId) {
 
                 Post post = postRepository.findById(postId)
                                 .orElseThrow(() -> new PostNotFoundException("Post not found"));
 
-                return commentRepository.findByPostId(post.getId())
+                return commentRepository.findByPostIdOrderByCreatedAtAscIdAsc(post.getId())
                                 .stream()
                                 .map(comment -> new CommentResponse(
                                                 comment.getId(),
@@ -75,6 +87,7 @@ public class CommentService {
                                 .toList();
         }
 
+        @Transactional
         public void deleteComment(Long id) {
 
                 Comment comment = commentRepository.findById(id)

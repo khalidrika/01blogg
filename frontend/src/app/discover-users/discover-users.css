@@ -1,0 +1,11 @@
+.discover-page { max-width: 900px; margin: 0 auto; padding: 1rem; }
+.users-list { display: grid; gap: 1rem; margin-top: 1rem; }
+.user-card { display: flex; align-items: center; gap: 1rem; padding: 1rem; border: 1px solid #d1d5db; border-radius: .5rem; }
+.avatar { display: grid; place-items: center; width: 3rem; height: 3rem; border-radius: 50%; background: #e7edff; color: #26428b; flex-shrink: 0; font-weight: bold; }
+.user-info { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+h2 { margin: 0; font-size: 1.2rem; }
+.user-actions { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
+button { padding: .6rem 1rem; border: 0; border-radius: .4rem; background: #26428b; color: white; cursor: pointer; font: inherit; }
+button:disabled { opacity: .6; cursor: default; }
+.error { color: #b91c1c; }
+@media (max-width: 600px) { .user-card { flex-wrap: wrap; } .user-actions { flex-basis: 100%; } }

@@ -68,6 +68,11 @@ public class GlobalExceptionHandler {
                 .body(new ErrorResponse(ex.getMessage()));
     }
 
+    @ExceptionHandler(NotificationNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleNotificationNotFound(NotificationNotFoundException ex) {
+        return ResponseEntity.status(404).body(new ErrorResponse(ex.getMessage()));
+    }
+
     @ExceptionHandler(BadRequestException.class)
     public ResponseEntity<ErrorResponse> handleBadRequest(
             BadRequestException ex) {

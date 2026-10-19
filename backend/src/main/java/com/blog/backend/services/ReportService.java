@@ -12,6 +12,7 @@ import com.blog.backend.entity.User;
 import com.blog.backend.exception.UserNotFoundException;
 import com.blog.backend.repository.ReportRepository;
 import com.blog.backend.repository.UserRepository;
+import com.blog.backend.exception.BadRequestException;
 import java.util.List;
 
 import lombok.RequiredArgsConstructor;
@@ -25,21 +26,33 @@ public class ReportService {
 
     public void createReport(Long reportedUserId, ReportRequest request) {
 
+        if (request == null || request.reason() == null || request.reason().isBlank()) {
+            throw new BadRequestException("Reason is required");
+        }
+        if (request.reason().length() > 255) {
+            throw new BadRequestException("Reason must be 255 characters or fewer");
+        }
+
         String email = SecurityContextHolder
                 .getContext()
                 .getAuthentication()
                 .getName();
 
         User reporter = userRepository.findByEmail(email);
+        if (reporter == null) throw new UserNotFoundException("User not found");
 
         User reportedUser = userRepository.findById(reportedUserId)
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
+
+        if (reporter.getId().equals(reportedUser.getId())) {
+            throw new BadRequestException("You cannot report yourself");
+        }
 
         Report report = new Report();
 
         report.setReporter(reporter);
         report.setReportedUser(reportedUser);
-        report.setReason(request.reason());
+        report.setReason(request.reason().trim());
         report.setCreatedAt(LocalDateTime.now());
 
         reportRepository.save(report);
@@ -58,5 +71,5 @@ public class ReportService {
                         report.getReason(),
                         report.getCreatedAt()))
                 .toList();
-    }   
+    }
 }

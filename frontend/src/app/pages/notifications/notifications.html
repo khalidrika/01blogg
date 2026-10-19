@@ -1,20 +1,50 @@
-<h2>Notifications</h2>
+<app-navbar />
 
-<div *ngFor="let notification of notifications()">
+<main class="notifications-page">
+  <header>
+    <div>
+      <h1>Notifications</h1>
+      @if (store.loaded()) {
+        <p>{{ store.unreadCount() }} unread</p>
+      }
+    </div>
+    <button type="button" (click)="store.load()"
+      [disabled]="store.loading() || store.pendingIds().size > 0">Refresh</button>
+  </header>
 
-    <p>
-        {{ notification.message }}
-    </p>
+  @if (store.loading()) {
+    <p role="status">Loading notifications…</p>
+  }
+  @if (store.error()) {
+    <div class="error" role="alert">
+      <p>{{ store.error() }}</p>
+      @if (store.loaded()) { <p>Showing the last loaded notifications.</p> }
+      <button type="button" (click)="store.load()" [disabled]="store.pendingIds().size > 0">Retry</button>
+    </div>
+  }
+  @if (store.feedback()) {
+    <p class="success" role="status">{{ store.feedback() }}</p>
+  }
+  @if (store.loaded() && !store.notifications().length) {
+    <p class="empty">No notifications yet. Follow other users to hear about their new posts.</p>
+  }
 
-    <p>
-        Status:
-        {{ notification.read ? 'Read' : 'Unread' }}
-    </p>
-
-    <button *ngIf="!notification.read" (click)="markAsRead(notification.id)">
-        Mark as read
-    </button>
-
-    <hr>
-
-</div>
+  <section aria-label="Your notifications" [attr.aria-busy]="store.loading()">
+    @for (notification of store.notifications(); track notification.id) {
+      <article [class.unread]="!notification.read">
+        <div class="notification-details">
+          <p class="message">{{ notification.message }}</p>
+          <time [attr.datetime]="notification.createdAt">{{ notification.createdAt | date:'medium' }}</time>
+          <span class="status">{{ notification.read ? 'Read' : 'Unread' }}</span>
+        </div>
+        <button type="button" [disabled]="store.pendingIds().has(notification.id)"
+          (click)="store.setRead(notification.id, !notification.read)">
+          {{ store.pendingIds().has(notification.id) ? 'Saving…' : (notification.read ? 'Mark as unread' : 'Mark as read') }}
+        </button>
+        @if (store.actionErrors()[notification.id]) {
+          <p class="error action-error" role="alert">{{ store.actionErrors()[notification.id] }}</p>
+        }
+      </article>
+    }
+  </section>
+</main>

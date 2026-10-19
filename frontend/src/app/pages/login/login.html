@@ -1,18 +1,13 @@
-<h2>Login</h2>
-
-<form (ngSubmit)="login()">
-
-    <div>
-        <label>Email</label>
-        <input type="email" name="email" [(ngModel)]="email" />
-    </div>
-
-    <div>
-        <label>Password</label>
-        <input type="password" name="password" [(ngModel)]="password" />
-    </div>
-
-    <button type="button" (click)="login()">Login</button>
-</form>
-<p>Email value: {{ email }}</p>
-<p>Password value: {{ password }}</p>
+<main class="auth-page">
+  <h1>Log in to 01Blog</h1>
+  @if (notice) { <p role="status">{{ notice }}</p> }
+  @if (error()) { <p class="error" role="alert">{{ error() }}</p> }
+  <form #form="ngForm" (ngSubmit)="form.valid && login()">
+    <label for="email">Email</label>
+    <input id="email" type="email" name="email" [(ngModel)]="email" required email autocomplete="email">
+    <label for="password">Password</label>
+    <input id="password" type="password" name="password" [(ngModel)]="password" required autocomplete="current-password">
+    <button type="submit" [disabled]="form.invalid || pending()">{{ pending() ? 'Logging in...' : 'Log in' }}</button>
+  </form>
+  <p>New to 01Blog? <a routerLink="/register">Create an account</a></p>
+</main>

@@ -1,54 +1,30 @@
-<h2>Feed</h2>
-
-<div *ngFor="let post of posts()">
-
-    <h3>{{ post.title }}</h3>
-
-    <p>{{ post.content }}</p>
-
-    <p>By: {{ post.authorusername }}</p>
-
-    <!-- image -->
-    <img *ngIf="post.mediaUrl && post.mediaType === 'image'" [src]="'http://localhost:8080' + post.mediaUrl"
-        width="300">
-
-    <!-- video -->
-    <video *ngIf="post.mediaUrl && post.mediaType === 'video'" [src]="'http://localhost:8080' + post.mediaUrl"
-        width="300" controls>
-    </video>
-
-    <!-- likes -->
-    <p>
-        <button (click)="likePost(post.id)">
-            Like
-        </button>
-
-        Likes: {{ likeCounts()[post.id] || 0 }}
-    </p>
-
-    <!-- comments -->
-    <h4>Comments</h4>
-
-    <div *ngFor="let comment of commentsByPost()[post.id] || []">
-
-        <p>
-            <strong>{{ comment.authorUsername }}</strong>:
-            {{ comment.content }}
-        </p>
-        <button *ngIf="comment.authorId === currentUserId" (click)="deleteComment(comment.id, post.id)">
-            Delete
-        </button>
-
+<app-navbar />
+<main class="feed-page">
+  <header><h1>Home</h1><button type="button" (click)="loadFeed()" [disabled]="loading()">Refresh feed</button></header>
+  @if (loading()) { <p role="status">Loading your feed…</p> }
+  @if (error()) {
+    <div class="error" role="alert"><p>{{ error() }}</p>
+      @if (loaded()) { <p>Showing the last loaded posts.</p> }
+      <button type="button" (click)="loadFeed()">Retry feed</button>
     </div>
-
-    <!-- add comment -->
-    <input type="text" placeholder="Write a comment..." [value]="commentTexts()[post.id] || ''"
-        (input)="setCommentText(post.id, $any($event.target).value)">
-
-    <button (click)="addComment(post.id)">
-        Add comment
-    </button>
-
-    <hr>
-
-</div>
+  }
+  @if (status()) { <p role="status">{{ status() }}</p> }
+  @for (post of posts(); track post.id) {
+    <article class="post-card" [attr.data-post-id]="post.id">
+      <h2>{{ post.title }}</h2>
+      <p>By <a [routerLink]="['/profile', post.authorid]">{{ post.authorusername }}</a>
+        · <time [attr.datetime]="post.createdAt">{{ post.createdAt | date:'medium' }}</time></p>
+      <p class="content">{{ post.content }}</p>
+      @if (post.mediaUrl && post.mediaType === 'image') {
+        <img [src]="mediaOrigin + post.mediaUrl" [alt]="post.title" loading="lazy">
+      } @else if (post.mediaUrl && post.mediaType === 'video') {
+        <video [src]="mediaOrigin + post.mediaUrl" [attr.aria-label]="post.title" controls preload="metadata"></video>
+      }
+      <app-post-interactions [postId]="post.id" (unavailable)="removeUnavailablePost($event)" />
+    </article>
+  } @empty {
+    @if (loaded() && !loading() && !error()) {
+      <p>No posts in your feed yet. <a routerLink="/discover">Discover users</a> to follow their learning journeys.</p>
+    }
+  }
+</main>
