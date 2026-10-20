@@ -5,22 +5,22 @@
   @if (loading()) { <p role="status">Loading post...</p> }
   @if (loadError()) {
     <p class="error" role="alert">{{ loadError() }}</p>
-    @if (retryable()) { <button type="button" (click)="loadPost()">Retry</button> }
+    @if (retryable()) { <button class="btn btn-outline-primary" type="button" (click)="loadPost()">Retry</button> }
     <p><a [routerLink]="['/profile', currentUserId]">Back to my profile</a></p>
   }
   @if (post(); as currentPost) {
     <form #form="ngForm" (ngSubmit)="form.valid && save()" [attr.aria-busy]="saving()">
       <fieldset [disabled]="saving()">
-        <label for="post-title">Title</label>
-        <input id="post-title" name="title" [(ngModel)]="title" required>
-        <label for="post-content">Content</label>
-        <textarea id="post-content" name="content" [(ngModel)]="content" rows="8" required></textarea>
-        <label for="post-media">Replace image or video (optional)</label>
+        <label class="form-label" for="post-title">Title</label>
+        <input class="form-control" id="post-title" name="title" [(ngModel)]="title" required maxlength="255">
+        <label class="form-label" for="post-content">Content</label>
+        <textarea class="form-control" id="post-content" name="content" [(ngModel)]="content" rows="8" required maxlength="10000"></textarea>
+        <label class="form-label" for="post-media">Replace image or video (optional)</label>
         <p id="media-help">Keep the current media by leaving this empty. PNG, JPG, JPEG or MP4, up to 50 MB.</p>
-        <input #fileInput id="post-media" type="file" accept="image/png,image/jpeg,video/mp4" aria-describedby="media-help" (change)="onFileSelected($event)">
+        <input class="form-control" #fileInput id="post-media" type="file" accept="image/png,image/jpeg,video/mp4" aria-describedby="media-help" (change)="onFileSelected($event)">
         @if (fileError()) { <p class="error" role="alert">{{ fileError() }}</p> }
         @if (selectedFile || fileError()) {
-          <button type="button" (click)="clearReplacement(fileInput)">Cancel file selection</button>
+          <button class="btn btn-outline-primary" type="button" (click)="clearReplacement(fileInput)">Cancel file selection</button>
         }
         @if (previewUrl && previewType === 'image') {
           <img [src]="previewUrl" alt="Post image preview">
@@ -28,7 +28,7 @@
           <video [src]="previewUrl" controls preload="metadata" aria-label="Post video preview"></video>
         }
         @if (saveError()) { <p class="error" role="alert">{{ saveError() }}</p> }
-        <button type="submit" [disabled]="form.invalid || !title.trim() || !content.trim() || !!fileError() || saving()">
+        <button class="btn btn-primary" type="submit" [disabled]="form.invalid || !title.trim() || !content.trim() || !!fileError() || saving()">
           {{ saving() ? 'Saving...' : 'Save changes' }}
         </button>
       </fieldset>

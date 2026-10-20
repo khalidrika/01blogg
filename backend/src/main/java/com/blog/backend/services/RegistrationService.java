@@ -10,6 +10,8 @@ import org.springframework.stereotype.Service;
 import com.blog.backend.dto.UserResponse;
 import com.blog.backend.entity.Role;
 import com.blog.backend.dto.ErrorResponse;
+import java.nio.charset.StandardCharsets;
+import org.springframework.dao.DataIntegrityViolationException;
 
 @Service
 @RequiredArgsConstructor
@@ -18,6 +20,9 @@ public class RegistrationService {
     private final PasswordEncoder passwordEncoder;
 
     public ResponseEntity<?> register(RegistrationReq request) {
+        if (request.password().getBytes(StandardCharsets.UTF_8).length > 72) {
+            return ResponseEntity.badRequest().body(new ErrorResponse("Password must be 72 UTF-8 bytes or fewer"));
+        }
         User existingUser = userRepository.findByEmail(request.email());
         User existingUserByusername = userRepository.findByUsername(request.username());
         if (existingUser != null) {
@@ -34,7 +39,13 @@ public class RegistrationService {
         user.setPassword(passwordEncoder.encode(request.password()));
         user.setRole(Role.USER);
 
-        User savedUser = userRepository.save(user);
+        User savedUser;
+        try {
+            savedUser = userRepository.save(user);
+        } catch (DataIntegrityViolationException exception) {
+            // Concurrent registrations may both pass the initial lookup.
+            return ResponseEntity.badRequest().body(new ErrorResponse("Username or email is already in use"));
+        }
         UserResponse response = new UserResponse(savedUser.getId(), savedUser.getUsername(), savedUser.getEmail(),
                 savedUser.getRole().name(), savedUser.isBanned());
         return ResponseEntity.ok(response);

@@ -1,0 +1,7 @@
+.env
+.env.*
+!.env.example
+backend/uploads/
+frontend/playwright-report/
+frontend/test-results/
+.verification/

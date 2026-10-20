@@ -6,6 +6,7 @@ import { API_URL } from '../../core/auth/auth.service';
 import { ProfilePost } from '../../core/services/profile.service';
 import { PostService } from '../../core/services/post.service';
 import { Navbar } from '../../shared/navbar/navbar';
+import { mediaError } from '../../core/services/media-validation';
 
 @Component({
   selector: 'app-edit-post',
@@ -97,17 +98,10 @@ export class EditPost implements OnInit, OnDestroy {
     const file = input.files?.[0];
     if (!file) return;
     this.clearReplacement();
-    const image = /\.(png|jpe?g)$/i.test(file.name) && ['image/png', 'image/jpeg'].includes(file.type);
-    const video = /\.mp4$/i.test(file.name) && file.type === 'video/mp4';
-    if (!image && !video) {
-      this.fileError.set('Choose a PNG, JPG, JPEG or MP4 file.');
-    } else if (file.size === 0) {
-      this.fileError.set('The selected file is empty.');
-    } else if (file.size > 50 * 1024 * 1024) {
-      this.fileError.set('The selected file must be 50 MB or smaller.');
-    } else {
+    this.fileError.set(mediaError(file));
+    if (!this.fileError()) {
       this.selectedFile = file;
-      this.replacementType = image ? 'image' : 'video';
+      this.replacementType = file.type === 'video/mp4' ? 'video' : 'image';
       this.objectUrl = URL.createObjectURL(file);
     }
     if (this.fileError()) input.value = '';
@@ -128,6 +122,9 @@ export class EditPost implements OnInit, OnDestroy {
     if (!this.title.trim() || !this.content.trim()) {
       this.saveError.set('Title and content are required.');
       return;
+    }
+    if (this.title.trim().length > 255 || this.content.trim().length > 10000) {
+      this.saveError.set('Use at most 255 characters for the title and 10000 for the content.'); return;
     }
     this.saveError.set('');
     this.saving.set(true);

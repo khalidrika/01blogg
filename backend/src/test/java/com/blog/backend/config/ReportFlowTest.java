@@ -79,6 +79,7 @@ class ReportFlowTest {
         User admin = user(3L, "admin", Role.ADMIN);
         for (User user : List.of(reporter, target, admin)) {
             when(jwt.extractEmail(user.getUsername())).thenReturn(user.getEmail());
+            when(jwt.extractUserId(user.getUsername())).thenReturn(user.getId());
             when(users.findByEmail(user.getEmail())).thenReturn(user);
             when(users.findById(user.getId())).thenReturn(Optional.of(user));
         }

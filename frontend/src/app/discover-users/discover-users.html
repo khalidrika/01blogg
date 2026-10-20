@@ -7,19 +7,19 @@
     <p role="status">Loading users...</p>
   } @else if (error()) {
     <p class="error" role="alert">{{ error() }}</p>
-    <button type="button" (click)="loadUsers()">Retry users</button>
+    <button class="btn btn-outline-primary" type="button" (click)="loadUsers()">Retry users</button>
   } @else {
     @if (followStatusLoading()) { <p role="status">Loading follow status...</p> }
     @if (followError()) {
       <p class="error" role="alert">{{ followError() }}</p>
       @if (!followStatusLoaded() && !followStatusLoading()) {
-        <button type="button" (click)="loadFollowing()">Retry follow status</button>
+        <button class="btn btn-outline-primary" type="button" (click)="loadFollowing()">Retry follow status</button>
       }
     }
     @if (status()) { <p role="status">{{ status() }}</p> }
     <div class="users-list">
       @for (user of users(); track user.id) {
-        <article class="user-card">
+        <article class="user-card card">
           <div class="avatar" aria-hidden="true">{{ user.username.charAt(0).toUpperCase() }}</div>
           <div class="user-info">
             <h2>{{ user.username }}</h2>
@@ -27,7 +27,7 @@
           </div>
           <div class="user-actions">
             <a [routerLink]="['/profile', user.id]">View Profile</a>
-            <button type="button" [disabled]="!followStatusLoaded() || togglingIds().includes(user.id)" (click)="toggleFollow(user.id)">
+            <button class="btn btn-outline-primary" type="button" [disabled]="!followStatusLoaded() || togglingIds().includes(user.id)" (click)="toggleFollow(user.id)">
               {{ togglingIds().includes(user.id) ? 'Please wait...' : !followStatusLoaded() ? 'Follow unavailable' : isFollowing(user.id) ? 'Unfollow' : 'Follow' }}
             </button>
           </div>

@@ -1,76 +1,70 @@
-import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, DestroyRef, inject, OnDestroy, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { HttpClient } from '@angular/common/http';
-import { Router } from '@angular/router';
-
+import { Router, RouterLink } from '@angular/router';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Navbar } from '../../shared/navbar/navbar';
+import { PostService } from '../../core/services/post.service';
+import { mediaError } from '../../core/services/media-validation';
 
 @Component({
   selector: 'app-create-post',
-  imports: [CommonModule, FormsModule, Navbar],
+  imports: [FormsModule, RouterLink, Navbar],
   templateUrl: './create-post.html',
-  styleUrl: './create-post.css'
+  styleUrl: '../edit-post/edit-post.css'
 })
-export class CreatePost {
-
+export class CreatePost implements OnDestroy {
+  private readonly posts = inject(PostService);
+  private readonly router = inject(Router);
+  private readonly destroyRef = inject(DestroyRef);
   title = '';
   content = '';
-
   selectedFile: File | null = null;
-
   previewUrl: string | null = null;
   previewType: 'image' | 'video' | null = null;
+  readonly saving = signal(false);
+  readonly error = signal('');
+  readonly fileError = signal('');
 
-  constructor(
-    private http: HttpClient,
-    private router: Router
-  ) {}
-
-  onFileSelected(event: Event) {
+  onFileSelected(event: Event): void {
+    if (this.saving()) return;
     const input = event.target as HTMLInputElement;
-
-    if (!input.files || input.files.length === 0) {
-      return;
-    }
-
-    const file = input.files[0];
-
+    const file = input.files?.[0];
+    if (!file) return;
+    this.clearFile();
+    this.fileError.set(mediaError(file));
+    if (this.fileError()) { input.value = ''; return; }
     this.selectedFile = file;
-
-    if (file.type.startsWith('image/')) {
-      this.previewType = 'image';
-    } else if (file.type.startsWith('video/')) {
-      this.previewType = 'video';
-    } else {
-      this.previewType = null;
-    }
-
+    this.previewType = file.type === 'video/mp4' ? 'video' : 'image';
     this.previewUrl = URL.createObjectURL(file);
   }
 
-  createPost() {
-    const formData = new FormData();
+  clearFile(input?: HTMLInputElement): void {
+    if (this.previewUrl) URL.revokeObjectURL(this.previewUrl);
+    this.previewUrl = null; this.previewType = null; this.selectedFile = null;
+    this.fileError.set('');
+    if (input) input.value = '';
+  }
 
-    formData.append('title', this.title);
-    formData.append('content', this.content);
-
-    if (this.selectedFile) {
-      formData.append('media', this.selectedFile);
+  createPost(): void {
+    if (this.saving() || this.fileError()) return;
+    if (!this.title.trim() || !this.content.trim()) {
+      this.error.set('Title and content are required.'); return;
     }
-
-    this.http
-      .post(
-        'http://localhost:8080/api/posts',
-        formData
-      )
-      .subscribe({
-        next: () => {
-          this.router.navigate(['/feed']);
-        },
-        error: (error) => {
-          console.log('CREATE POST ERROR:', error);
+    if (this.title.trim().length > 255 || this.content.trim().length > 10000) {
+      this.error.set('Use at most 255 characters for the title and 10000 for the content.'); return;
+    }
+    this.saving.set(true); this.error.set('');
+    this.posts.createPost(this.title.trim(), this.content.trim(), this.selectedFile)
+      .pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+        next: post => { void this.router.navigate(['/profile', post.authorid], { queryParams: { created: 'true' } }); },
+        error: error => {
+          this.saving.set(false);
+          this.error.set(error.status === 413 ? 'The upload is too large. Please choose a smaller file.'
+            : error.status === 400 && typeof error.error?.message === 'string' ? error.error.message
+            : 'Could not publish your post. Your draft is still here; please try again.');
         }
       });
   }
+
+  ngOnDestroy(): void { this.clearFile(); }
 }

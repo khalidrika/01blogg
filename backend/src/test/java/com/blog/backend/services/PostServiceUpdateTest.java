@@ -14,6 +14,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.util.Optional;
+import java.io.ByteArrayOutputStream;
+import java.awt.image.BufferedImage;
+import javax.imageio.ImageIO;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -26,10 +30,11 @@ import static org.mockito.Mockito.*;
 class PostServiceUpdateTest {
     private final PostRepository posts = mock(PostRepository.class);
     private final NotificationService notifications = mock(NotificationService.class);
-    private final PostService service = new PostService(posts, mock(UserRepository.class), notifications, mock(FollowRepository.class), mock(CommentRepository.class), mock(LikeRepository.class));
+    private final PostService service = new PostService(posts, mock(UserRepository.class), notifications, mock(FollowRepository.class), mock(CommentRepository.class), mock(LikeRepository.class), new MediaStorage("uploads"));
     private Post post;
 
     @BeforeEach void setup() {
+        TransactionSynchronizationManager.initSynchronization();
         User author = new User();
         author.setId(1L); author.setUsername("student"); author.setEmail("owner@example.com");
         post = new Post();
@@ -41,7 +46,10 @@ class PostServiceUpdateTest {
         SecurityContextHolder.getContext().setAuthentication(new TestingAuthenticationToken("owner@example.com", null));
     }
 
-    @AfterEach void cleanup() { SecurityContextHolder.clearContext(); }
+    @AfterEach void cleanup() {
+        TransactionSynchronizationManager.clearSynchronization();
+        SecurityContextHolder.clearContext();
+    }
 
     @Test void textOnlyEditPreservesMediaAuthorAndDate() {
         var result = service.updatePost(10L, "Updated title", "Updated content", null);
@@ -87,15 +95,19 @@ class PostServiceUpdateTest {
         Path oldFile = Files.createTempFile(directory, "post-edit-test-", ".png");
         Files.write(oldFile, new byte[]{1, 2});
         post.setMediaUrl("/uploads/" + oldFile.getFileName());
-        byte[] video = {3, 4, 5};
+        var image = new ByteArrayOutputStream();
+        ImageIO.write(new BufferedImage(2, 2, BufferedImage.TYPE_INT_RGB), "png", image);
+        byte[] bytes = image.toByteArray();
         Path newFile = null;
         try {
             var result = service.updatePost(10L, "Title", "Content",
-                new MockMultipartFile("media", "replacement.mp4", "video/mp4", video));
+                new MockMultipartFile("media", "replacement.png", "image/png", bytes));
             newFile = directory.resolve(result.mediaUrl().substring("/uploads/".length()));
-            assertArrayEquals(video, Files.readAllBytes(newFile));
+            assertArrayEquals(bytes, Files.readAllBytes(newFile));
+            assertTrue(Files.exists(oldFile), "Old media remains until the database commits");
+            TransactionSynchronizationManager.getSynchronizations().forEach(sync -> sync.afterCommit());
             assertFalse(Files.exists(oldFile));
-            assertEquals("video", result.mediaType());
+            assertEquals("image", result.mediaType());
         } finally {
             Files.deleteIfExists(oldFile);
             if (newFile != null) Files.deleteIfExists(newFile);

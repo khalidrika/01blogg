@@ -26,7 +26,7 @@ class AdminServiceTest {
     private final FollowRepository follows = mock(FollowRepository.class);
     private final NotificationRepository notifications = mock(NotificationRepository.class);
     private final ReportRepository reports = mock(ReportRepository.class);
-    private final PostService postService = new PostService(posts, users, mock(NotificationService.class), follows, comments, likes);
+    private final PostService postService = new PostService(posts, users, mock(NotificationService.class), follows, comments, likes, new MediaStorage("uploads"));
     private final AdminService service = new AdminService(users, posts, comments, likes, follows, notifications, reports, postService);
     private User user;
     private Post post;

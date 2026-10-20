@@ -2,12 +2,12 @@
 <main class="admin-page">
   <header>
     <div><h1>Admin Dashboard</h1><p>Manage users, posts and reports.</p></div>
-    <button type="button" (click)="loadSection(selected())" [disabled]="pending() || loading()[selected()]">Refresh {{ selected() }}</button>
+    <button class="btn btn-outline-primary" type="button" (click)="loadSection(selected())" [disabled]="pending() || loading()[selected()]">Refresh {{ selected() }}</button>
   </header>
 
   <nav class="section-nav" aria-label="Moderation sections">
     @for (section of sections; track section) {
-      <button type="button" (click)="selectSection(section)" [attr.aria-pressed]="selected() === section" [disabled]="pending()">
+      <button class="btn btn-outline-primary" type="button" (click)="selectSection(section)" [attr.aria-pressed]="selected() === section" [disabled]="pending()">
         {{ section | titlecase }}
         <span>{{ !loaded()[section] ? '—' : section === 'users' ? users().length : section === 'posts' ? posts().length : reports().length }}</span>
       </button>
@@ -19,7 +19,7 @@
     <div class="error" role="alert">
       <p>{{ errors()[selected()] }}</p>
       @if (loaded()[selected()]) { <p>Showing the last loaded data.</p> }
-      <button type="button" (click)="loadSection(selected())" [disabled]="pending()">Retry {{ selected() }}</button>
+      <button class="btn btn-outline-primary" type="button" (click)="loadSection(selected())" [disabled]="pending()">Retry {{ selected() }}</button>
     </div>
   }
 
@@ -28,7 +28,7 @@
       @case ('users') {
         <h2>Users</h2>
         @for (user of users(); track user.id) {
-          <article class="user-card" [attr.data-user-id]="user.id">
+          <article class="user-card card" [attr.data-user-id]="user.id">
             <div>
               <h3><a [routerLink]="['/profile', user.id]">{{ user.username }}</a></h3>
               <p>{{ user.email }}</p>
@@ -36,8 +36,8 @@
             </div>
             <div class="actions">
               @if (user.role !== 'ADMIN') {
-                <button type="button" (click)="requestUserAction(user.banned ? 'unban' : 'ban', user.id)" [disabled]="pending()">{{ user.banned ? 'Unban' : 'Ban' }}</button>
-                <button type="button" class="danger" (click)="requestUserAction('delete-user', user.id)" [disabled]="pending()">Delete user</button>
+                <button class="btn btn-outline-primary" type="button" (click)="requestUserAction(user.banned ? 'unban' : 'ban', user.id)" [disabled]="pending()">{{ user.banned ? 'Unban' : 'Ban' }}</button>
+                <button type="button" class="danger btn btn-outline-danger" (click)="requestUserAction('delete-user', user.id)" [disabled]="pending()">Delete user</button>
               } @else { <span>Administrator account</span> }
             </div>
           </article>
@@ -48,7 +48,7 @@
       @case ('posts') {
         <h2>Posts</h2>
         @for (post of posts(); track post.id) {
-          <article class="post-card" [attr.data-post-id]="post.id">
+          <article class="post-card card" [attr.data-post-id]="post.id">
             <h3>{{ post.title }}</h3>
             <p>By <a [routerLink]="['/profile', post.authorid]">{{ post.authorusername }}</a> · <time [attr.datetime]="post.createdAt">{{ post.createdAt | date:'medium' }}</time></p>
             <p class="content">{{ post.content }}</p>
@@ -57,7 +57,7 @@
             } @else if (post.mediaUrl && post.mediaType === 'video') {
               <video [src]="mediaOrigin + post.mediaUrl" [attr.aria-label]="post.title" controls preload="metadata"></video>
             }
-            <button type="button" class="danger" (click)="requestPostDeletion(post.id)" [disabled]="pending()">Delete post</button>
+            <button type="button" class="danger btn btn-outline-danger" (click)="requestPostDeletion(post.id)" [disabled]="pending()">Delete post</button>
           </article>
         } @empty {
           @if (loaded().posts) { <p class="empty">No posts found.</p> }
@@ -66,7 +66,7 @@
       @case ('reports') {
         <h2>Reports</h2>
         @for (report of reports(); track report.id) {
-          <article class="report-card" [attr.data-report-id]="report.id">
+          <article class="report-card card" [attr.data-report-id]="report.id">
             <h3>Report #{{ report.id }}</h3>
             <p>Reported user: <a [routerLink]="['/profile', report.reportedUserId]">{{ report.reportedUsername }}</a></p>
             <p>Reported by: <a [routerLink]="['/profile', report.reporterId]">{{ report.reporterUsername }}</a></p>
@@ -76,11 +76,11 @@
               @if (findUser(report.reportedUserId); as user) {
                 <span>{{ user.banned ? 'Banned' : 'Active' }}</span>
                 @if (user.role !== 'ADMIN') {
-                  <button type="button" (click)="requestUserAction(user.banned ? 'unban' : 'ban', user.id)" [disabled]="pending()">{{ user.banned ? 'Unban' : 'Ban' }}</button>
-                  <button type="button" class="danger" (click)="requestUserAction('delete-user', user.id)" [disabled]="pending()">Delete user</button>
+                  <button class="btn btn-outline-primary" type="button" (click)="requestUserAction(user.banned ? 'unban' : 'ban', user.id)" [disabled]="pending()">{{ user.banned ? 'Unban' : 'Ban' }}</button>
+                  <button type="button" class="danger btn btn-outline-danger" (click)="requestUserAction('delete-user', user.id)" [disabled]="pending()">Delete user</button>
                 }
               } @else {
-                <button type="button" (click)="selectSection('users')" [disabled]="pending()">View users</button>
+                <button class="btn btn-outline-primary" type="button" (click)="selectSection('users')" [disabled]="pending()">View users</button>
               }
             </div>
           </article>
@@ -98,7 +98,7 @@
   <p id="moderation-description">{{ action()?.description }}</p>
   @if (actionError()) { <p class="error" role="alert">{{ actionError() }}</p> }
   <div class="actions">
-    <button type="button" autofocus (click)="cancelAction()" [disabled]="pending()">Cancel</button>
-    <button type="button" class="danger" (click)="confirmAction()" [disabled]="pending() || !action()">{{ pending() ? 'Saving…' : 'Confirm' }}</button>
+    <button class="btn btn-outline-primary" type="button" autofocus (click)="cancelAction()" [disabled]="pending()">Cancel</button>
+    <button type="button" class="danger btn btn-outline-danger" (click)="confirmAction()" [disabled]="pending() || !action()">{{ pending() ? 'Saving…' : 'Confirm' }}</button>
   </div>
 </dialog>

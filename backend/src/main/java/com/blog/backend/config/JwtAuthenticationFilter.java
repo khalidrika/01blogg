@@ -49,17 +49,19 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String token = authHeader.substring(7);
 
         String email;
+        Long userId;
         User user;
 
         try {
             email = jwtService.extractEmail(token);
+            userId = jwtService.extractUserId(token);
         } catch (JwtException | IllegalArgumentException e) {
             filterChain.doFilter(request, response);
             return;
         }
 
         user = userRepository.findByEmail(email);
-        if (user == null) {
+        if (user == null || userId == null || !userId.equals(user.getId())) {
             filterChain.doFilter(request, response);
             return;
         }

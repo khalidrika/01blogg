@@ -57,7 +57,9 @@ class SecurityConfigTest {
     }
     void session(Role role, boolean banned) {
         User user = new User(); user.setRole(role); user.setBanned(banned);
+        user.setId(1L);
         when(jwt.extractEmail("valid-token")).thenReturn("user@example.com");
+        when(jwt.extractUserId("valid-token")).thenReturn(1L);
         when(users.findByEmail("user@example.com")).thenReturn(user);
     }
     @Test void anonymousApiRequestGets401() throws Exception {
@@ -87,6 +89,12 @@ class SecurityConfigTest {
     @Test void deletedUserGets401() throws Exception {
         when(jwt.extractEmail("deleted")).thenReturn("deleted@example.com");
         mvc.perform(get("/api/probe").header("Authorization", "Bearer deleted"))
+            .andExpect(status().isUnauthorized());
+    }
+    @Test void oldTokenCannotAuthenticateANewAccountWithTheSameEmail() throws Exception {
+        session(Role.USER, false);
+        when(jwt.extractUserId("valid-token")).thenReturn(999L);
+        mvc.perform(get("/api/probe").header("Authorization", "Bearer valid-token"))
             .andExpect(status().isUnauthorized());
     }
     @Test void publicAuthEndpointsIgnoreStaleTokens() throws Exception {

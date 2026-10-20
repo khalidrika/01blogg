@@ -1,11 +1,11 @@
 <div class="likes">
-  <button type="button" (click)="toggleLike()" [disabled]="!likes() || likePending()"
+  <button class="btn btn-outline-primary" type="button" (click)="toggleLike()" [disabled]="!likes() || likePending()"
     [attr.aria-pressed]="likes()?.liked ?? false">{{ likePending() ? 'Saving…' : likes()?.liked ? 'Unlike' : 'Like' }}</button>
   @if (likes(); as status) { <span>{{ status.count }} likes</span> }
   @if (likeLoading()) { <span role="status">Loading likes…</span> }
   @if (likeError()) {
     <span class="error" role="alert">{{ likeError() }}</span>
-    <button type="button" (click)="loadLikes()" [disabled]="likeLoading() || likePending()">Refresh likes</button>
+    <button class="btn btn-outline-primary" type="button" (click)="loadLikes()" [disabled]="likeLoading() || likePending()">Refresh likes</button>
   }
 </div>
 @if (feedback()) { <p class="success" role="status">{{ feedback() }}</p> }
@@ -13,7 +13,7 @@
 <section class="comments" [attr.aria-labelledby]="'comments-title-' + postId">
   <header>
     <h4 [id]="'comments-title-' + postId">Comments @if (commentsLoaded()) { ({{ comments().length }}) }</h4>
-    <button type="button" (click)="loadComments()" [disabled]="writing() || commentsLoading()">Refresh comments</button>
+    <button class="btn btn-outline-primary" type="button" (click)="loadComments()" [disabled]="writing() || commentsLoading()">Refresh comments</button>
   </header>
   @if (commentsLoading()) { <p role="status">Loading comments…</p> }
   @if (commentsError()) { <p class="error" role="alert">{{ commentsError() }}</p> }
@@ -27,20 +27,20 @@
         @if (deleteConfirmation() === comment.id) {
           <div role="group" aria-label="Confirm comment deletion">
             <span>Delete this comment?</span>
-            <button type="button" (click)="confirmDelete(comment.id)" [disabled]="writing()">{{ writing() ? 'Deleting…' : 'Delete comment' }}</button>
-            <button type="button" (click)="cancelDelete()" [disabled]="writing()">Cancel</button>
+            <button class="btn btn-outline-danger" type="button" (click)="confirmDelete(comment.id)" [disabled]="writing()">{{ writing() ? 'Deleting…' : 'Delete comment' }}</button>
+            <button class="btn btn-outline-danger" type="button" (click)="cancelDelete()" [disabled]="writing()">Cancel</button>
           </div>
         } @else {
-          <button type="button" (click)="requestDelete(comment.id)" [disabled]="writing()">Delete</button>
+          <button class="btn btn-outline-danger" type="button" (click)="requestDelete(comment.id)" [disabled]="writing()">Delete</button>
         }
       }
     </div>
   } @empty {
     @if (commentsLoaded()) { <p>No comments yet.</p> }
   }
-  <label [for]="'comment-draft-' + postId">Write a comment</label>
-  <textarea [id]="'comment-draft-' + postId" rows="2" [maxLength]="commentLimit" [value]="draft()"
+  <label class="form-label" [for]="'comment-draft-' + postId">Write a comment</label>
+  <textarea class="form-control" [id]="'comment-draft-' + postId" rows="2" [maxLength]="commentLimit" [value]="draft()"
     [readOnly]="writing()" (input)="draft.set($any($event.target).value)" [attr.aria-describedby]="'comment-help-' + postId"></textarea>
   <p class="hint" [id]="'comment-help-' + postId">{{ draft().length }}/{{ commentLimit }} characters</p>
-  <button type="button" (click)="addComment()" [disabled]="writing() || !commentsLoaded()">{{ writing() && deleteConfirmation() === null ? 'Sending…' : 'Add comment' }}</button>
+  <button class="btn btn-outline-primary" type="button" (click)="addComment()" [disabled]="writing() || !commentsLoaded()">{{ writing() && deleteConfirmation() === null ? 'Sending…' : 'Add comment' }}</button>
 </section>

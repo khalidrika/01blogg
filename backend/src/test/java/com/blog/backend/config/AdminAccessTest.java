@@ -64,6 +64,7 @@ class AdminAccessTest {
     private void session(Role role) {
         User user = new User(); user.setId(1L); user.setRole(role); user.setEmail("moderator@example.com");
         when(jwt.extractEmail("token")).thenReturn(user.getEmail());
+        when(jwt.extractUserId("token")).thenReturn(user.getId());
         when(users.findByEmail(user.getEmail())).thenReturn(user);
     }
 

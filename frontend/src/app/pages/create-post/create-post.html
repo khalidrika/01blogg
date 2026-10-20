@@ -1,62 +1,24 @@
-<app-navbar></app-navbar>
-
-<h2>Create Post</h2>
-
-<div>
-    <label>Title</label>
-    <br>
-
-    <input
-        type="text"
-        placeholder="Post title"
-        [(ngModel)]="title"
-    >
-</div>
-
-<br>
-
-<div>
-    <label>Content</label>
-    <br>
-
-    <textarea
-        placeholder="Write your post..."
-        [(ngModel)]="content">
-    </textarea>
-</div>
-
-<br>
-
-<div>
-    <label>Image or Video</label>
-    <br>
-
-    <input
-        type="file"
-        accept="image/png,image/jpeg,video/mp4"
-        (change)="onFileSelected($event)"
-    >
-</div>
-
-<br>
-
-<!-- image preview -->
-<img
-    *ngIf="previewUrl && previewType === 'image'"
-    [src]="previewUrl"
-    width="300"
->
-
-<!-- video preview -->
-<video
-    *ngIf="previewUrl && previewType === 'video'"
-    [src]="previewUrl"
-    width="300"
-    controls>
-</video>
-
-<br><br>
-
-<button (click)="createPost()">
-    Publish
-</button>
+<app-navbar />
+<main class="edit-page">
+  <p class="eyebrow">YOUR LEARNING JOURNEY</p>
+  <h1>Create a post</h1>
+  <p class="text-secondary">Share a discovery, a challenge or something you learned today.</p>
+  <form #form="ngForm" (ngSubmit)="form.valid && createPost()" [attr.aria-busy]="saving()">
+    <fieldset [disabled]="saving()">
+      <label class="form-label" for="post-title">Title</label>
+      <input class="form-control" id="post-title" name="title" [(ngModel)]="title" required maxlength="255" placeholder="What did you learn?">
+      <label class="form-label" for="post-content">Content</label>
+      <textarea class="form-control" id="post-content" name="content" [(ngModel)]="content" rows="8" required maxlength="10000"></textarea>
+      <label class="form-label" for="post-media">Image or video (optional)</label>
+      <p id="media-help">PNG, JPG, JPEG or MP4, up to 50 MB. Images up to 20 million pixels.</p>
+      <input class="form-control" #fileInput id="post-media" type="file" accept="image/png,image/jpeg,video/mp4" aria-describedby="media-help" (change)="onFileSelected($event)">
+      @if (fileError()) { <p class="error" role="alert">{{ fileError() }}</p> }
+      @if (selectedFile || fileError()) { <button class="btn btn-outline-primary" type="button" (click)="clearFile(fileInput)">Cancel file selection</button> }
+      @if (previewUrl && previewType === 'image') { <img [src]="previewUrl" alt="Post image preview"> }
+      @else if (previewUrl && previewType === 'video') { <video [src]="previewUrl" controls preload="metadata" aria-label="Post video preview"></video> }
+      @if (error()) { <p class="error" role="alert">{{ error() }}</p> }
+      <button class="btn btn-primary" type="submit" [disabled]="form.invalid || !title.trim() || !content.trim() || !!fileError() || saving()">{{ saving() ? 'Publishing…' : 'Publish' }}</button>
+    </fieldset>
+    @if (!saving()) { <a routerLink="/feed">Cancel</a> }
+  </form>
+</main>

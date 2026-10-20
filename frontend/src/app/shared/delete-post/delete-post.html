@@ -1,12 +1,12 @@
 @if (!confirming()) {
-  <button type="button" class="danger" (click)="requestDelete()">Delete</button>
+  <button type="button" class="danger btn btn-outline-danger" (click)="requestDelete()">Delete</button>
 } @else {
   <div class="confirmation" role="group" aria-label="Confirm post deletion" [attr.aria-busy]="deleting()">
     <p>Delete “{{ post().title }}”? This will also delete its likes, comments and media. This cannot be undone.</p>
     @if (error()) { <p class="error" role="alert">{{ error() }}</p> }
     <div class="actions">
-      <button type="button" (click)="cancel()" [disabled]="deleting()">Cancel</button>
-      <button type="button" class="danger" (click)="confirmDelete()" [disabled]="deleting()">
+      <button class="btn btn-outline-primary" type="button" (click)="cancel()" [disabled]="deleting()">Cancel</button>
+      <button type="button" class="danger btn btn-outline-danger" (click)="confirmDelete()" [disabled]="deleting()">
         {{ deleting() ? 'Deleting...' : 'Delete post' }}
       </button>
     </div>

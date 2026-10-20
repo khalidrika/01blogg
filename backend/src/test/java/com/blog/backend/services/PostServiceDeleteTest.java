@@ -24,7 +24,7 @@ class PostServiceDeleteTest {
     private final CommentRepository comments = mock(CommentRepository.class);
     private final LikeRepository likes = mock(LikeRepository.class);
     private final PostService service = new PostService(posts, mock(UserRepository.class),
-        mock(NotificationService.class), mock(FollowRepository.class), comments, likes);
+        mock(NotificationService.class), mock(FollowRepository.class), comments, likes, new MediaStorage("uploads"));
     private Post post;
     private Path media;
 

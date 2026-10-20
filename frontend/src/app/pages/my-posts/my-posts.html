@@ -8,10 +8,10 @@
     <p role="status">Loading posts...</p>
   } @else if (error()) {
     <p class="error" role="alert">{{ error() }}</p>
-    <button type="button" (click)="loadMyPosts()">Retry</button>
+    <button class="btn btn-outline-primary" type="button" (click)="loadMyPosts()">Retry</button>
   } @else {
     @for (post of posts(); track post.id) {
-      <article [attr.data-post-id]="post.id">
+      <article class="card" [attr.data-post-id]="post.id">
         <h2>{{ post.title }}</h2>
         @if (post.authorid === currentUserId) {
           <a [routerLink]="['/posts', post.id, 'edit']">Edit</a>

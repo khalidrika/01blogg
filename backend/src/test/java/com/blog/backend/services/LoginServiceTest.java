@@ -36,11 +36,11 @@ class LoginServiceTest {
     }
 
     @Test void validCredentialsObtainToken() {
-        User user = new User(); user.setPassword("hash"); user.setEmail("user@example.com"); user.setRole(Role.USER);
+        User user = new User(); user.setId(7L); user.setPassword("hash"); user.setEmail("user@example.com"); user.setRole(Role.USER);
         when(users.findByEmail("user@example.com")).thenReturn(user);
         when(passwords.matches("password", "hash")).thenReturn(true);
-        when(jwt.generateToken("user@example.com")).thenReturn("signed-token");
+        when(jwt.generateToken("user@example.com", 7L)).thenReturn("signed-token");
         assertEquals(200, service.login(new LoginReq("user@example.com", "password")).getStatusCode().value());
-        verify(jwt).generateToken("user@example.com");
+        verify(jwt).generateToken("user@example.com", 7L);
     }
 }

@@ -8,7 +8,7 @@
         <p>{{ store.unreadCount() }} unread</p>
       }
     </div>
-    <button type="button" (click)="store.load()"
+    <button class="btn btn-outline-primary" type="button" (click)="store.load()"
       [disabled]="store.loading() || store.pendingIds().size > 0">Refresh</button>
   </header>
 
@@ -19,7 +19,7 @@
     <div class="error" role="alert">
       <p>{{ store.error() }}</p>
       @if (store.loaded()) { <p>Showing the last loaded notifications.</p> }
-      <button type="button" (click)="store.load()" [disabled]="store.pendingIds().size > 0">Retry</button>
+      <button class="btn btn-outline-primary" type="button" (click)="store.load()" [disabled]="store.pendingIds().size > 0">Retry</button>
     </div>
   }
   @if (store.feedback()) {
@@ -31,13 +31,13 @@
 
   <section aria-label="Your notifications" [attr.aria-busy]="store.loading()">
     @for (notification of store.notifications(); track notification.id) {
-      <article [class.unread]="!notification.read">
+      <article class="card" [class.unread]="!notification.read">
         <div class="notification-details">
           <p class="message">{{ notification.message }}</p>
           <time [attr.datetime]="notification.createdAt">{{ notification.createdAt | date:'medium' }}</time>
           <span class="status">{{ notification.read ? 'Read' : 'Unread' }}</span>
         </div>
-        <button type="button" [disabled]="store.pendingIds().has(notification.id)"
+        <button class="btn btn-outline-primary" type="button" [disabled]="store.pendingIds().has(notification.id)"
           (click)="store.setRead(notification.id, !notification.read)">
           {{ store.pendingIds().has(notification.id) ? 'Saving…' : (notification.read ? 'Mark as unread' : 'Mark as read') }}
         </button>

@@ -1,5 +1,5 @@
-import { Component, DestroyRef, inject, OnDestroy, OnInit } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
+import { Component, DestroyRef, inject, OnDestroy, OnInit, signal } from '@angular/core';
+import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../core/auth/auth.service';
 import { NotificationService } from '../../core/services/notification.service';
@@ -8,11 +8,12 @@ import { filter, fromEvent, interval } from 'rxjs';
 
 @Component({
   selector: 'app-navbar',
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, RouterLinkActive],
   templateUrl: './navbar.html',
   styleUrl: './navbar.css'
 })
 export class Navbar implements OnInit, OnDestroy {
+  readonly menuOpen = signal(false);
   readonly notifications = inject(NotificationService);
   private readonly destroyRef = inject(DestroyRef);
 

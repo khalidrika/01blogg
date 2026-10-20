@@ -3,11 +3,11 @@
   @if (notice) { <p role="status">{{ notice }}</p> }
   @if (error()) { <p class="error" role="alert">{{ error() }}</p> }
   <form #form="ngForm" (ngSubmit)="form.valid && login()">
-    <label for="email">Email</label>
-    <input id="email" type="email" name="email" [(ngModel)]="email" required email autocomplete="email">
-    <label for="password">Password</label>
-    <input id="password" type="password" name="password" [(ngModel)]="password" required autocomplete="current-password">
-    <button type="submit" [disabled]="form.invalid || pending()">{{ pending() ? 'Logging in...' : 'Log in' }}</button>
+    <label class="form-label" for="email">Email</label>
+    <input class="form-control" id="email" type="email" name="email" [(ngModel)]="email" required email autocomplete="email">
+    <label class="form-label" for="password">Password</label>
+    <input class="form-control" id="password" type="password" name="password" [(ngModel)]="password" required autocomplete="current-password">
+    <button class="btn btn-primary" type="submit" [disabled]="form.invalid || pending()">{{ pending() ? 'Logging in...' : 'Log in' }}</button>
   </form>
   <p>New to 01Blog? <a routerLink="/register">Create an account</a></p>
 </main>

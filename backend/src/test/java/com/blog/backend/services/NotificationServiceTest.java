@@ -120,7 +120,7 @@ class NotificationServiceTest {
             Post post = invocation.getArgument(0); post.setId(20L); return post;
         });
         PostService postService = new PostService(posts, users, service, follows,
-            mock(CommentRepository.class), mock(LikeRepository.class));
+            mock(CommentRepository.class), mock(LikeRepository.class), new MediaStorage("uploads"));
         LocalDateTime before = LocalDateTime.now();
         postService.createPost("What I learned", "Learning Spring Boot", null);
         ArgumentCaptor<Notification> saved = ArgumentCaptor.forClass(Notification.class);
@@ -143,7 +143,7 @@ class NotificationServiceTest {
     @Test void rejectedPostDoesNotNotifyFollowers() {
         PostRepository posts = mock(PostRepository.class);
         PostService postService = new PostService(posts, users, service, follows,
-            mock(CommentRepository.class), mock(LikeRepository.class));
+            mock(CommentRepository.class), mock(LikeRepository.class), new MediaStorage("uploads"));
         assertThrows(BadRequestException.class, () -> postService.createPost(" ", "Content", null));
         verifyNoInteractions(posts, notifications, follows);
     }

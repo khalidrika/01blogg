@@ -1,8 +1,9 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { tap } from 'rxjs';
+import { environment } from '../../../environments/environment';
 
-export const API_URL = 'http://localhost:8080/api';
+export const API_URL = environment.apiUrl;
 interface LoginResponse {
   token: string;
   id: number;

@@ -177,6 +177,10 @@ export class Profile implements OnInit, OnDestroy {
     return this.userId === this.currentUserId && this.route.snapshot.queryParamMap.get('updated') === 'true';
   }
 
+  get postCreated(): boolean {
+    return this.userId === this.currentUserId && this.route.snapshot.queryParamMap.get('created') === 'true';
+  }
+
   get currentUserId(): number {
     return Number(localStorage.getItem('userId'));
   }

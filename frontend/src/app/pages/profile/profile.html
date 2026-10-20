@@ -2,6 +2,7 @@
 
 <main class="profile-page">
   <h1>Profile</h1>
+  @if (postCreated) { <p class="success" role="status">Post published successfully.</p> }
   @if (postUpdated) { <p role="status">Post updated successfully.</p> }
   @if (profileLoading()) {
     <p role="status">Loading profile...</p>
@@ -9,7 +10,7 @@
   @if (profileError()) {
     <p class="error" role="alert">{{ profileError() }}</p>
     @if (profileError() !== 'Invalid profile address.' && profileError() !== 'User not found.') {
-      <button type="button" (click)="loadProfile()">Retry profile</button>
+      <button class="btn btn-outline-primary" type="button" (click)="loadProfile()">Retry profile</button>
     }
   }
 
@@ -21,19 +22,19 @@
       @if (userId === currentUserId) {
         <a routerLink="/create-post">Create a post</a>
       } @else {
-        <button type="button" (click)="followUser()" [disabled]="followPending() || !followStatusLoaded()">
+        <button class="btn btn-outline-primary" type="button" (click)="followUser()" [disabled]="followPending() || !followStatusLoaded()">
           {{ followPending() ? 'Please wait...' : !followStatusLoaded() ? 'Follow unavailable' : isFollowing() ? 'Unfollow' : 'Follow' }}
         </button>
         @if (followStatusLoading()) { <p role="status">Loading follow status...</p> }
         @if (followError()) {
           <p class="error" role="alert">{{ followError() }}</p>
           @if (!followStatusLoaded() && !followStatusLoading()) {
-            <button type="button" (click)="loadFollowStatus()">Retry follow status</button>
+            <button class="btn btn-outline-primary" type="button" (click)="loadFollowStatus()">Retry follow status</button>
           }
         }
         <div class="report-form">
-          <label for="report-reason">Report user — reason</label>
-          <textarea id="report-reason" rows="3" placeholder="Describe the inappropriate content or behavior."
+          <label class="form-label" for="report-reason">Report user — reason</label>
+          <textarea class="form-control" id="report-reason" rows="3" placeholder="Describe the inappropriate content or behavior."
             [value]="reportReason()" [maxLength]="reportReasonLimit" [readOnly]="reportConfirmation() !== null"
             aria-describedby="report-help" [attr.aria-invalid]="reportError() ? 'true' : null"
             (input)="reportReason.set($any($event.target).value)"></textarea>
@@ -43,11 +44,11 @@
               <h3 id="report-confirm-title">Report {{ user.username }}?</h3>
               <p>Review your reason before sending:</p>
               <blockquote>{{ reason }}</blockquote>
-              <button type="button" (click)="confirmReport()" [disabled]="reporting()">{{ reporting() ? 'Sending...' : 'Confirm report' }}</button>
-              <button type="button" (click)="cancelReport()" [disabled]="reporting()">Cancel</button>
+              <button class="btn btn-outline-primary" type="button" (click)="confirmReport()" [disabled]="reporting()">{{ reporting() ? 'Sending...' : 'Confirm report' }}</button>
+              <button class="btn btn-outline-primary" type="button" (click)="cancelReport()" [disabled]="reporting()">Cancel</button>
             </div>
           } @else {
-            <button type="button" (click)="reportUser()">Report</button>
+            <button class="btn btn-outline-primary" type="button" (click)="reportUser()">Report</button>
           }
           @if (reportError()) { <p class="error" role="alert">{{ reportError() }}</p> }
           @if (reportStatus()) { <p class="success" role="status">{{ reportStatus() }}</p> }
@@ -63,10 +64,10 @@
         <p role="status">Loading posts...</p>
       } @else if (postsError()) {
         <p class="error" role="alert">{{ postsError() }}</p>
-        <button type="button" (click)="loadPosts()">Retry posts</button>
+        <button class="btn btn-outline-primary" type="button" (click)="loadPosts()">Retry posts</button>
       } @else {
         @for (post of posts(); track post.id) {
-          <article class="post-card" [attr.data-post-id]="post.id">
+          <article class="post-card card" [attr.data-post-id]="post.id">
             <h3>{{ post.title }}</h3>
             @if (post.authorid === currentUserId) {
               <a [routerLink]="['/posts', post.id, 'edit']">Edit</a>
